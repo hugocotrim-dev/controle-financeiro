@@ -206,7 +206,7 @@ interface Insight {
     </div>
   `,
   styles: [`
-    .app-container { min-height:100vh;max-width:480px;margin:0 auto;background:var(--color-bg-primary); }
+    .app-container { min-height:100vh;background:var(--color-bg-primary); }
 
     .dashboard-header {
       background: rgba(0,0,0,0.9);
@@ -295,6 +295,16 @@ interface Insight {
       &.income { background:rgba(16,185,129,0.1);color:var(--color-green);border-color:rgba(16,185,129,0.2); }
       &.goals { background:rgba(168,85,247,0.1);color:var(--color-accent);border-color:rgba(168,85,247,0.2); }
       &.history { background:rgba(59,130,246,0.1);color:var(--color-blue);border-color:rgba(59,130,246,0.2); }
+    }
+
+    @media (min-width: 768px) {
+      .page-content { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+      .balance-card { grid-column: 1 / -1; margin: 0; }
+      .quick-actions { grid-column: 1 / -1; }
+      .actions-grid { display: flex; justify-content: center; gap: 2rem; }
+      .action-btn { width: 120px; }
+      .insights-container { grid-column: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+      .card { margin-bottom: 0; }
     }
   `]
 })

@@ -102,7 +102,8 @@ import { AuthService } from '../../../core/services/auth.service';
     .auth-page { min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;position:relative;background:#000;overflow:hidden; }
     .auth-bg { position:absolute;inset:0;pointer-events:none; }
     .auth-glow { position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(16,185,129,0.2) 0%,transparent 70%);filter:blur(40px); }
-    .auth-content { position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem 1.5rem;gap:2rem;max-width:480px;margin:0 auto;width:100%; }
+    .auth-content { position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem 1.5rem;gap:2rem;width:100%;max-width:480px;margin:0 auto; }
+    @media(min-width: 768px) { .auth-content { max-width:600px; } }
     .auth-logo { text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.5rem; }
     .logo-icon { width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(16,185,129,0.4); .material-icons-round{font-size:36px;color:white;} }
     .logo-name { font-size:1.75rem;font-weight:800;color:#fff;letter-spacing:-0.02em; }

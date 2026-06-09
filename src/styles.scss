@@ -96,7 +96,7 @@
   /* Layout */
   --bottom-nav-height: 72px;
   --header-height: 60px;
-  --max-width: 480px;
+  --max-width: 1200px;
 }
 
 /* Light theme */
@@ -357,8 +357,9 @@ select.form-control {
 .app-container {
   min-height: 100vh;
   min-height: 100dvh;
-  max-width: var(--max-width);
+  max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
   position: relative;
   background: var(--color-bg-primary);
 }

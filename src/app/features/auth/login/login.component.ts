@@ -116,7 +116,6 @@ import { AuthService } from '../../../core/services/auth.service';
       background: #000;
       overflow: hidden;
     }
-
     .auth-bg {
       position: absolute;
       inset: 0;
@@ -133,7 +132,6 @@ import { AuthService } from '../../../core/services/auth.service';
       background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%);
       filter: blur(40px);
     }
-
     .auth-content {
       position: relative;
       z-index: 1;
@@ -144,9 +142,12 @@ import { AuthService } from '../../../core/services/auth.service';
       min-height: 100vh;
       padding: 2rem 1.5rem;
       gap: 2rem;
+      width: 100%;
       max-width: 480px;
       margin: 0 auto;
-      width: 100%;
+    }
+    @media (min-width: 768px) {
+      .auth-content { max-width: 600px; }
     }
 
     .auth-logo {

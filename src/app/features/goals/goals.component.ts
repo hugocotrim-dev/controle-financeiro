@@ -123,7 +123,7 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
     </div>
   `,
   styles: [`
-    .app-container { min-height:100vh;max-width:480px;margin:0 auto;background:var(--color-bg-primary); }
+    .app-container { min-height:100vh;background:var(--color-bg-primary); }
     .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between; }
     .page-title { font-size:1.125rem;font-weight:700; }
     .btn-icon { background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-secondary);transition:all 150ms; &:hover{color:var(--color-text-primary);} .material-icons-round{font-size:20px;} }
@@ -150,6 +150,13 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
     .form-row { display:grid;grid-template-columns:1fr 1fr;gap:0.75rem; }
     .modal-actions { display:flex;gap:0.75rem;margin-top:0.5rem; .btn-primary{flex:1;} }
     .spinner-sm { width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite; }
+
+    @media (min-width: 768px) {
+      .modal-overlay { align-items: center; }
+      .modal-sheet { border-radius: 24px; max-width: 500px; padding: 2rem; max-height: 85vh; }
+      .modal-handle { display: none; }
+      .goals-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+    }
   `]
 })
 export class GoalsComponent implements OnInit {

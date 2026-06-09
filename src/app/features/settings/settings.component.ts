@@ -110,7 +110,7 @@ type ThemeOption = 'dark' | 'light' | 'system';
     </div>
   `,
   styles: [`
-    .app-container { min-height:100vh;max-width:480px;margin:0 auto;background:var(--color-bg-primary); }
+    .app-container { min-height:100vh;background:var(--color-bg-primary); }
     .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem; }
     .page-title { font-size:1.125rem;font-weight:700; }
     .settings-section { margin-bottom:1.25rem; }
