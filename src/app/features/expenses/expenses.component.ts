@@ -236,7 +236,7 @@ export class ExpensesComponent implements OnInit {
   currentDate = signal(new Date());
 
   form: {
-    description: string; amount: number; date: string; category_id: string;
+    description: string; amount: number; date: string; category_id: string | null;
     type: ExpenseType; observation: string; total_installments: number;
   } = { description: '', amount: 0, date: new Date().toISOString().split('T')[0], category_id: '', type: 'fixo', observation: '', total_installments: 2 };
 
@@ -297,7 +297,10 @@ export class ExpensesComponent implements OnInit {
   closeModal() { this.showModal.set(false); }
 
   async saveExpense() {
-    if (!this.form.description || !this.form.amount) return;
+    if (!this.form.description || !this.form.amount) {
+      alert('Por favor, preencha a descrição e o valor do gasto.');
+      return;
+    }
     this.saving.set(true);
     try {
       const month = this.currentDate().getMonth() + 1;

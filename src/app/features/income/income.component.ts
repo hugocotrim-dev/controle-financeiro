@@ -190,20 +190,34 @@ export class IncomeComponent implements OnInit {
   closeModal() { this.showModal.set(false); }
 
   async saveIncome() {
-    if (!this.form.description || !this.form.amount) return;
+    if (!this.form.description || !this.form.amount) {
+      alert('Por favor, preencha a descrição e o valor da receita.');
+      return;
+    }
     this.saving.set(true);
     const month = this.currentDate().getMonth() + 1; const year = this.currentDate().getFullYear();
     try {
       if (this.editingIncome()) await this.incomeService.update(this.editingIncome()!.id, { ...this.form, month, year });
       else await this.incomeService.create({ ...this.form, month, year });
       this.closeModal(); await this.loadIncomes();
-    } catch (e) { console.error(e); } finally { this.saving.set(false); }
+    } catch (e: any) { 
+      console.error(e); 
+      alert('Erro ao salvar receita: ' + (e?.message || JSON.stringify(e)));
+    } finally { this.saving.set(false); }
   }
 
   async deleteIncome() {
-    if (!this.editingIncome() || !confirm('Excluir esta receita?')) return;
+    if (!this.editingIncome()) return;
+    if (!confirm('Excluir esta receita?')) return;
     this.saving.set(true);
-    try { await this.incomeService.delete(this.editingIncome()!.id); this.closeModal(); await this.loadIncomes(); }
-    catch (e) { console.error(e); } finally { this.saving.set(false); }
+    try { 
+      await this.incomeService.delete(this.editingIncome()!.id); 
+      this.closeModal(); 
+      await this.loadIncomes(); 
+    } catch (e) { 
+      console.error(e); 
+    } finally { 
+      this.saving.set(false); 
+    }
   }
 }
