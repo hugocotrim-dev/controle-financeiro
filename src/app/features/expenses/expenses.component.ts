@@ -306,12 +306,12 @@ export class ExpensesComponent implements OnInit {
         const startDate = new Date(this.form.date);
         await this.expenseService.createInstallments(
           { description: this.form.description, total_amount: this.form.amount, total_installments: this.form.total_installments, installment_amount: this.form.amount / this.form.total_installments, start_date: this.form.date },
-          startDate, this.form.category_id
+          startDate, this.form.category_id || null
         );
       } else if (this.editingExpense()) {
-        await this.expenseService.update(this.editingExpense()!.id, { ...this.form, month, year });
+        await this.expenseService.update(this.editingExpense()!.id, { ...this.form, category_id: this.form.category_id || null, month, year });
       } else {
-        await this.expenseService.create({ ...this.form, month, year });
+        await this.expenseService.create({ ...this.form, category_id: this.form.category_id || null, month, year });
       }
       this.closeModal();
       await this.loadExpenses();
