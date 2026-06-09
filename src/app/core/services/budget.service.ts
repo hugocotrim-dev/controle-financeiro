@@ -17,7 +17,7 @@ export class BudgetService {
       .eq('user_id', this.auth.getCurrentUserId())
       .eq('month', month)
       .eq('year', year)
-      .single();
+      .maybeSingle();
     return data as Budget | null;
   }
 

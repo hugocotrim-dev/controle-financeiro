@@ -78,8 +78,8 @@ interface MonthHistory {
     </div>
   `,
   styles: [`
-    .app-container { min-height:100vh;max-width:480px;margin:0 auto;background:var(--color-bg-primary); }
-    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem; }
+    .app-container { min-height:100vh;background:var(--color-bg-primary); }
+    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem 1rem 4.5rem; }
     .page-title { font-size:1.125rem;font-weight:700; }
     .history-list { display:flex;flex-direction:column;gap:0.75rem; }
     .history-card { background:var(--gradient-card);border:1px solid var(--color-border);border-radius:16px;padding:1rem 1.25rem;transition:all 200ms;
@@ -92,6 +92,10 @@ interface MonthHistory {
     .hstat-icon { width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center; .material-icons-round{font-size:14px;color:white;} &.green{background:rgba(16,185,129,0.2);.material-icons-round{color:var(--color-green);}} &.red{background:rgba(239,68,68,0.2);.material-icons-round{color:var(--color-red);}} }
     .hstat-label { font-size:0.625rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.04em; }
     .hstat-value { font-size:0.8125rem;font-weight:700; &.income{color:var(--color-green);} &.expense{color:var(--color-red);} }
+
+    @media (min-width: 768px) {
+      .history-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+    }
   `]
 })
 export class HistoryComponent implements OnInit {

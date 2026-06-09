@@ -175,9 +175,9 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
     </div>
   `,
   styles: [`
-    .app-container { min-height:100vh;max-width:480px;margin:0 auto;background:var(--color-bg-primary); }
+    .app-container { min-height:100vh;background:var(--color-bg-primary); }
 
-    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between; }
+    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem 1rem 4.5rem;display:flex;align-items:center;justify-content:space-between; }
     .page-title { font-size:1.125rem;font-weight:700; }
     .month-selector { display:flex;align-items:center;gap:0.25rem;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:12px;padding:0.25rem; }
     .month-btn { background:none;border:none;cursor:pointer;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;border-radius:8px;transition:all 150ms; &:hover:not(:disabled){color:var(--color-text-primary);} &:disabled{opacity:0.3;} .material-icons-round{font-size:18px;} }
@@ -212,6 +212,13 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
     .type-btn { flex:1;padding:0.5rem;background:var(--color-bg-input);border:1px solid var(--color-border);border-radius:8px;color:var(--color-text-secondary);font-size:0.8125rem;font-weight:500;cursor:pointer;transition:all 150ms; &.active{background:rgba(168,85,247,0.15);border-color:var(--color-accent);color:var(--color-accent-light);} }
     .modal-actions { display:flex;gap:0.75rem;margin-top:0.5rem; .btn-primary{flex:1;} }
     .spinner-sm { width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite; }
+
+    @media (min-width: 768px) {
+      .modal-overlay { align-items: center; }
+      .modal-sheet { border-radius: 24px; max-width: 500px; padding: 2rem; max-height: 85vh; }
+      .modal-handle { display: none; }
+      .expense-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+    }
   `]
 })
 export class ExpensesComponent implements OnInit {
@@ -229,7 +236,7 @@ export class ExpensesComponent implements OnInit {
   currentDate = signal(new Date());
 
   form: {
-    description: string; amount: number; date: string; category_id: string;
+    description: string; amount: number; date: string; category_id: string | null;
     type: ExpenseType; observation: string; total_installments: number;
   } = { description: '', amount: 0, date: new Date().toISOString().split('T')[0], category_id: '', type: 'fixo', observation: '', total_installments: 2 };
 
@@ -290,7 +297,10 @@ export class ExpensesComponent implements OnInit {
   closeModal() { this.showModal.set(false); }
 
   async saveExpense() {
-    if (!this.form.description || !this.form.amount) return;
+    if (!this.form.description || !this.form.amount) {
+      alert('Por favor, preencha a descrição e o valor do gasto.');
+      return;
+    }
     this.saving.set(true);
     try {
       const month = this.currentDate().getMonth() + 1;
@@ -299,12 +309,12 @@ export class ExpensesComponent implements OnInit {
         const startDate = new Date(this.form.date);
         await this.expenseService.createInstallments(
           { description: this.form.description, total_amount: this.form.amount, total_installments: this.form.total_installments, installment_amount: this.form.amount / this.form.total_installments, start_date: this.form.date },
-          startDate, this.form.category_id
+          startDate, this.form.category_id || null
         );
       } else if (this.editingExpense()) {
-        await this.expenseService.update(this.editingExpense()!.id, { ...this.form, month, year });
+        await this.expenseService.update(this.editingExpense()!.id, { ...this.form, category_id: this.form.category_id || null, month, year });
       } else {
-        await this.expenseService.create({ ...this.form, month, year });
+        await this.expenseService.create({ ...this.form, category_id: this.form.category_id || null, month, year });
       }
       this.closeModal();
       await this.loadExpenses();

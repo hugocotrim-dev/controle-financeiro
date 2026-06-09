@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -116,7 +116,6 @@ import { AuthService } from '../../../core/services/auth.service';
       background: #000;
       overflow: hidden;
     }
-
     .auth-bg {
       position: absolute;
       inset: 0;
@@ -133,7 +132,6 @@ import { AuthService } from '../../../core/services/auth.service';
       background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%);
       filter: blur(40px);
     }
-
     .auth-content {
       position: relative;
       z-index: 1;
@@ -144,9 +142,12 @@ import { AuthService } from '../../../core/services/auth.service';
       min-height: 100vh;
       padding: 2rem 1.5rem;
       gap: 2rem;
+      width: 100%;
       max-width: 480px;
       margin: 0 auto;
-      width: 100%;
+    }
+    @media (min-width: 768px) {
+      .auth-content { max-width: 600px; }
     }
 
     .auth-logo {
@@ -287,7 +288,7 @@ export class LoginComponent {
   error = signal('');
   showPassword = signal(false);
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   async onSubmit(form: NgForm) {
     if (form.invalid) {
@@ -298,6 +299,7 @@ export class LoginComponent {
     this.error.set('');
     try {
       await this.authService.signIn(this.email, this.password);
+      this.router.navigate(['/dashboard']);
     } catch (err: any) {
       this.error.set(err.message ?? 'Erro ao entrar. Verifique suas credenciais.');
     } finally {

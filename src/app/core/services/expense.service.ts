@@ -32,7 +32,7 @@ export class ExpenseService {
     return data as Expense;
   }
 
-  async createInstallments(group: Omit<InstallmentGroup, 'id' | 'created_at' | 'user_id'>, startDate: Date, categoryId: string) {
+  async createInstallments(group: Omit<InstallmentGroup, 'id' | 'created_at' | 'user_id'>, startDate: Date, categoryId: string | null) {
     const userId = this.auth.getCurrentUserId();
 
     // Create installment group
