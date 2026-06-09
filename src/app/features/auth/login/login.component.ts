@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -287,7 +287,7 @@ export class LoginComponent {
   error = signal('');
   showPassword = signal(false);
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   async onSubmit(form: NgForm) {
     if (form.invalid) {
@@ -298,6 +298,7 @@ export class LoginComponent {
     this.error.set('');
     try {
       await this.authService.signIn(this.email, this.password);
+      this.router.navigate(['/dashboard']);
     } catch (err: any) {
       this.error.set(err.message ?? 'Erro ao entrar. Verifique suas credenciais.');
     } finally {
