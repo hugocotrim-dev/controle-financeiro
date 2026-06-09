@@ -1,6 +1,7 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Chart, registerables } from 'chart.js';
 import { AuthService } from '../../core/services/auth.service';
 import { ExpenseService } from '../../core/services/expense.service';
 import { IncomeService } from '../../core/services/income.service';
@@ -8,6 +9,8 @@ import { BudgetService } from '../../core/services/budget.service';
 import { GoalService } from '../../core/services/goal.service';
 import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
 import { Goal, getGoalStatus } from '../../core/models/goal.model';
+
+Chart.register(...registerables);
 
 interface MonthSummary {
   totalIncome: number;
@@ -139,6 +142,19 @@ interface Insight {
             </div>
           </section>
         }
+
+        <!-- Expenses Chart -->
+        <section class="chart-section">
+          <h3 class="section-title">
+            <span class="material-icons-round">pie_chart</span>
+            Despesas por Categoria
+          </h3>
+          <div class="card chart-card">
+            <div class="chart-container" style="position: relative; height: 220px; width: 100%;">
+              <canvas #expensesChart></canvas>
+            </div>
+          </div>
+        </section>
 
         <!-- Goals Overview -->
         @if (goals().length > 0) {
@@ -304,12 +320,16 @@ interface Insight {
       .actions-grid { display: flex; justify-content: center; gap: 2rem; }
       .action-btn { width: 120px; }
       .insights-container { grid-column: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-      .card { margin-bottom: 0; }
+      .card, .chart-card { margin-bottom: 0; }
+      .chart-section { grid-column: 1 / 3; }
     }
   `]
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   protected Math = Math;
+
+  @ViewChild('expensesChart') chartRef!: ElementRef<HTMLCanvasElement>;
+  private chartInstance: Chart | null = null;
 
   private authService = inject(AuthService);
   private expenseService = inject(ExpenseService);
@@ -385,11 +405,99 @@ export class DashboardComponent implements OnInit {
 
       this.goals.set(goals);
       this.generateInsights(totalIncome, totalExpenses, budgetAmount, budgetUsedPct);
+      this.updateChart(expenses);
     } catch (e) {
       console.error(e);
     } finally {
       this.loading.set(false);
     }
+  }
+
+  ngAfterViewInit() {
+    this.initChart();
+  }
+
+  ngOnDestroy() {
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+    }
+  }
+
+  private initChart() {
+    if (!this.chartRef) return;
+    const ctx = this.chartRef.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    this.chartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Sem gastos'],
+        datasets: [{
+          data: [1],
+          backgroundColor: ['#2a2a2a'],
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '75%',
+        plugins: {
+          legend: { position: 'right', labels: { color: '#a1a1aa', font: { family: 'Inter', size: 12 } } },
+          tooltip: { enabled: false }
+        }
+      }
+    });
+  }
+
+  private updateChart(expenses: any[]) {
+    if (!this.chartInstance) return;
+
+    if (expenses.length === 0) {
+      this.chartInstance.data = {
+        labels: ['Nenhum gasto este mês'],
+        datasets: [{
+          data: [1],
+          backgroundColor: ['#2a2a2a'],
+          borderWidth: 0,
+        }]
+      };
+      this.chartInstance.options.plugins!.tooltip!.enabled = false;
+      this.chartInstance.update();
+      return;
+    }
+
+    // Agrupar por categoria
+    const categoryTotals = new Map<string, { total: number, color: string }>();
+    for (const exp of expenses) {
+      const catName = exp.category?.name || 'Outros';
+      const catColor = exp.category?.color || '#a855f7';
+      const existing = categoryTotals.get(catName) || { total: 0, color: catColor };
+      existing.total += exp.amount;
+      categoryTotals.set(catName, existing);
+    }
+
+    const labels: string[] = [];
+    const data: number[] = [];
+    const colors: string[] = [];
+
+    categoryTotals.forEach((val, key) => {
+      labels.push(key);
+      data.push(val.total);
+      colors.push(val.color);
+    });
+
+    this.chartInstance.data = {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    };
+    this.chartInstance.options.plugins!.tooltip!.enabled = true;
+    this.chartInstance.update();
   }
 
   private generateInsights(income: number, expenses: number, budget: number, budgetPct: number) {
