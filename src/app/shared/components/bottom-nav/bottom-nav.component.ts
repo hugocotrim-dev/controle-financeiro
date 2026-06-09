@@ -60,23 +60,23 @@ interface NavItem {
 
     .dropdown-container {
       position: fixed;
-      bottom: env(safe-area-inset-bottom, 20px);
-      right: 20px;
+      top: env(safe-area-inset-top, 12px);
+      left: 12px;
       z-index: 100;
       display: flex;
-      flex-direction: column;
-      align-items: flex-end;
+      flex-direction: column-reverse;
+      align-items: flex-start;
       gap: 12px;
     }
 
     .menu-button {
-      width: 56px;
-      height: 56px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       background: linear-gradient(135deg, #a855f7, #7c3aed);
       border: none;
       color: white;
-      box-shadow: 0 8px 32px rgba(168, 85, 247, 0.4);
+      box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -84,7 +84,7 @@ interface NavItem {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
       .material-icons-round {
-        font-size: 28px;
+        font-size: 24px;
         transition: transform 0.3s ease;
       }
 
@@ -111,7 +111,7 @@ interface NavItem {
       gap: 0.25rem;
       min-width: 200px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-      transform-origin: bottom right;
+      transform-origin: top left;
     }
 
     .dropdown-item {
@@ -149,13 +149,13 @@ interface NavItem {
     }
 
     .animate-slide-up {
-      animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: slideDownFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes slideUpFade {
+    @keyframes slideDownFade {
       from {
         opacity: 0;
-        transform: translateY(20px) scale(0.95);
+        transform: translateY(-20px) scale(0.95);
       }
       to {
         opacity: 1;

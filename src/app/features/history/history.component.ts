@@ -79,7 +79,7 @@ interface MonthHistory {
   `,
   styles: [`
     .app-container { min-height:100vh;background:var(--color-bg-primary); }
-    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem; }
+    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem 1rem 4.5rem; }
     .page-title { font-size:1.125rem;font-weight:700; }
     .history-list { display:flex;flex-direction:column;gap:0.75rem; }
     .history-card { background:var(--gradient-card);border:1px solid var(--color-border);border-radius:16px;padding:1rem 1.25rem;transition:all 200ms;

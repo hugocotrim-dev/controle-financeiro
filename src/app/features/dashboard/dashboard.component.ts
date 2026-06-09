@@ -212,7 +212,7 @@ interface Insight {
       background: rgba(0,0,0,0.9);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--color-border);
-      padding: 1rem 1.25rem;
+      padding: 1rem 1.25rem 1rem 4.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
