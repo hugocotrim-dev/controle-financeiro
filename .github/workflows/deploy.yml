@@ -43,7 +43,7 @@ jobs:
       - name: Enviar o build para os servidores do GitHub
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'dist/controle-financeiro-app/browser' # Caminho que o Angular salva o site final
+          path: 'dist/controle-financeiro-app' # Caminho que o Angular salva o site final
 
       - name: Fazer Deploy!
         id: deployment
