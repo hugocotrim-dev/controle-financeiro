@@ -192,7 +192,7 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     { label: 'Gastos', icon: 'payments', route: '/expenses' },
     { label: 'Receitas', icon: 'trending_up', route: '/income' },
     { label: 'Metas', icon: 'flag', route: '/goals' },
-    { label: 'Histórico', icon: 'history', route: '/history' },
+    { label: 'Extrato', icon: 'receipt_long', route: '/history' },
     { label: 'Configurações', icon: 'settings', route: '/settings' },
   ];
 

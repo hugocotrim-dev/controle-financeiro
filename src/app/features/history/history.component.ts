@@ -1,16 +1,27 @@
-import { Component, OnInit, signal, inject, NgZone } from '@angular/core';
+import { Component, OnInit, signal, inject, NgZone, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ExpenseService } from '../../core/services/expense.service';
-import { IncomeService } from '../../core/services/income.service';
+import { SupabaseService } from '../../core/services/supabase.service';
+import { AuthService } from '../../core/services/auth.service';
 
-interface MonthHistory {
-  month: number;
-  year: number;
-  label: string;
-  totalExpenses: number;
-  totalIncome: number;
-  balance: number;
+interface Transaction {
+  id: string;
+  description: string;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  type: 'income' | 'expense';
+  source?: string;
+  timestamp: number;
 }
+
+interface ExtratoGroup {
+  dateLabel: string;
+  day: string;
+  monthStr: string;
+  transactions: Transaction[];
+  saldoDoDia: number;
+}
+
+type Periodo = 'diario' | 'mensal' | 'anual';
 
 @Component({
   selector: 'app-history',
@@ -19,52 +30,54 @@ interface MonthHistory {
   template: `
     <div class="app-container">
       <header class="page-header">
-        <h1 class="page-title">Histórico</h1>
+        <h1 class="page-title">Saldo e extrato</h1>
       </header>
+
+      <div class="period-tabs">
+        <button [class.active]="periodo() === 'diario'" (click)="setPeriodo('diario')">Diário</button>
+        <button [class.active]="periodo() === 'mensal'" (click)="setPeriodo('mensal')">Mensal</button>
+        <button [class.active]="periodo() === 'anual'" (click)="setPeriodo('anual')">Anual</button>
+      </div>
+
+      <div class="date-navigator">
+        <button class="nav-btn" (click)="prev()"><span class="material-icons-round">chevron_left</span></button>
+        <div class="current-date">{{ currentDateLabel() }}</div>
+        <button class="nav-btn" (click)="next()"><span class="material-icons-round">chevron_right</span></button>
+      </div>
 
       <main class="page-content">
         @if (loading()) {
-          <div>
-            @for (i of [1,2,3,4,5,6]; track i) {
-              <div class="skeleton" style="height:88px;border-radius:16px;margin-bottom:0.75rem"></div>
+          <div style="padding: 1rem 1.25rem;">
+            @for (i of [1,2,3]; track i) {
+              <div class="skeleton" style="height:88px;border-radius:16px;margin-bottom:1.5rem"></div>
             }
           </div>
+        } @else if (extratoGroups().length === 0) {
+          <div class="empty-state">Nenhuma movimentação neste período.</div>
         } @else {
-          <div class="history-list stagger-children">
-            @for (item of history(); track item.month + '-' + item.year) {
-              <div class="history-card" [class.current]="isCurrentMonth(item)">
-                <div class="history-month">
-                  <div class="month-label-big">{{ item.label }}</div>
-                  @if (isCurrentMonth(item)) {
-                    <span class="badge badge-accent">Atual</span>
-                  }
+          <div class="timeline">
+            @for (group of extratoGroups(); track group.dateLabel) {
+              <div class="timeline-group">
+                <div class="timeline-date">
+                  <span class="day">{{ group.day }}</span>
+                  <span class="month">{{ group.monthStr }}</span>
                 </div>
-                <div class="history-stats">
-                  <div class="hstat">
-                    <span class="hstat-icon green">
-                      <span class="material-icons-round">arrow_upward</span>
-                    </span>
-                    <div>
-                      <div class="hstat-label">Receitas</div>
-                      <div class="hstat-value income">{{ item.totalIncome | currency:'BRL':'symbol':'1.0-0':'pt-BR' }}</div>
-                    </div>
-                  </div>
-                  <div class="hstat">
-                    <span class="hstat-icon red">
-                      <span class="material-icons-round">arrow_downward</span>
-                    </span>
-                    <div>
-                      <div class="hstat-label">Gastos</div>
-                      <div class="hstat-value expense">{{ item.totalExpenses | currency:'BRL':'symbol':'1.0-0':'pt-BR' }}</div>
-                    </div>
-                  </div>
-                  <div class="hstat">
-                    <div>
-                      <div class="hstat-label">Saldo</div>
-                      <div class="hstat-value" [class.income]="item.balance >= 0" [class.expense]="item.balance < 0">
-                        {{ item.balance | currency:'BRL':'symbol':'1.0-0':'pt-BR' }}
+                <div class="timeline-content">
+                  @for (tx of group.transactions; track tx.id) {
+                    <div class="timeline-item">
+                      <div class="dot" [class.income]="tx.type === 'income'" [class.expense]="tx.type === 'expense'"></div>
+                      <div class="tx-details">
+                        <div class="tx-title">{{ tx.description }}</div>
+                        <div class="tx-subtitle">{{ tx.source }}</div>
+                      </div>
+                      <div class="tx-amount" [class.income]="tx.type === 'income'" [class.expense]="tx.type === 'expense'">
+                        {{ tx.type === 'expense' ? '-' : '' }}{{ tx.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
                       </div>
                     </div>
+                  }
+                  <div class="daily-balance">
+                    <span class="lbl">Saldo do {{ periodo() === 'anual' ? 'mês' : 'dia' }}</span>
+                    <span class="val">{{ group.saldoDoDia | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
                   </div>
                 </div>
               </div>
@@ -72,86 +85,224 @@ interface MonthHistory {
           </div>
         }
       </main>
-
     </div>
   `,
   styles: [`
-    .app-container { min-height:100vh;background:var(--color-bg-primary); }
-    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem 1rem 4.5rem; }
-    .page-title { font-size:1.125rem;font-weight:700; }
-    .history-list { display:flex;flex-direction:column;gap:0.75rem; }
-    .history-card { background:var(--gradient-card);border:1px solid var(--color-border);border-radius:16px;padding:1rem 1.25rem;transition:all 200ms;
-      &.current { border-color:rgba(168,85,247,0.3);background:linear-gradient(145deg,rgba(168,85,247,0.05) 0%,#0f0f0f 100%); }
-    }
-    .history-month { display:flex;align-items:center;gap:0.75rem;margin-bottom:0.875rem; }
-    .month-label-big { font-size:1rem;font-weight:700;text-transform:capitalize; }
-    .history-stats { display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem; }
-    .hstat { display:flex;align-items:center;gap:0.5rem; }
-    .hstat-icon { width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center; .material-icons-round{font-size:14px;color:white;} &.green{background:rgba(16,185,129,0.2);.material-icons-round{color:var(--color-green);}} &.red{background:rgba(239,68,68,0.2);.material-icons-round{color:var(--color-red);}} }
-    .hstat-label { font-size:0.625rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.04em; }
-    .hstat-value { font-size:0.8125rem;font-weight:700; &.income{color:var(--color-green);} &.expense{color:var(--color-red);} }
+    .app-container { min-height: 100vh; background: var(--color-bg-primary); padding-bottom: 5rem; }
+    .page-header { position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--color-border); padding: 1rem 1.25rem 1rem 4.5rem; }
+    .page-title { font-size: 1.125rem; font-weight: 700; }
+    
+    .period-tabs { display: flex; padding: 1rem 1.25rem 0.5rem; gap: 0.5rem; }
+    .period-tabs button { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--color-text-muted); border-radius: 8px; padding: 0.5rem; font-size: 0.8125rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .period-tabs button.active { background: rgba(168, 85, 247, 0.15); color: var(--color-accent-light); border-color: rgba(168, 85, 247, 0.3); }
 
-    @media (min-width: 768px) {
-      .history-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-    }
+    .date-navigator { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1.25rem 1.5rem; }
+    .nav-btn { background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; }
+    .current-date { font-size: 1rem; font-weight: 600; text-transform: capitalize; }
+
+    .empty-state { text-align: center; padding: 3rem 1.25rem; color: var(--color-text-muted); font-size: 0.875rem; }
+
+    .timeline { display: flex; flex-direction: column; padding: 0 1.25rem 2rem; }
+    .timeline-group { display: flex; gap: 1rem; }
+    .timeline-date { width: 45px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 4px; }
+    .timeline-date .day { font-size: 1.125rem; font-weight: 700; color: var(--color-text-primary); }
+    .timeline-date .month { font-size: 0.75rem; font-weight: 500; color: var(--color-text-muted); text-transform: capitalize; }
+    
+    .timeline-content { flex: 1; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1.25rem; position: relative; padding-bottom: 0.5rem; margin-bottom: 0.5rem; }
+    
+    .timeline-item { display: flex; align-items: center; margin-bottom: 1.25rem; position: relative; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; position: absolute; left: -24.5px; background: white; }
+    .dot.income { background: var(--color-green); box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
+    .dot.expense { background: var(--color-red); box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+
+    .tx-details { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .tx-title { font-size: 0.875rem; font-weight: 600; color: var(--color-text-primary); }
+    .tx-subtitle { font-size: 0.75rem; color: var(--color-text-muted); text-transform: capitalize; }
+    .tx-amount { font-size: 0.875rem; font-weight: 700; }
+    .tx-amount.income { color: var(--color-green); }
+    .tx-amount.expense { color: var(--color-red); }
+
+    .daily-balance { display: flex; justify-content: space-between; align-items: center; padding-top: 0.75rem; margin-bottom: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); }
+    .daily-balance .lbl { font-size: 0.75rem; color: var(--color-text-muted); }
+    .daily-balance .val { font-size: 0.8125rem; font-weight: 600; color: var(--color-text-primary); }
   `]
 })
 export class HistoryComponent implements OnInit {
-  private expenseService = inject(ExpenseService);
-  private incomeService = inject(IncomeService);
+  private supabase = inject(SupabaseService);
+  private auth = inject(AuthService);
   private ngZone = inject(NgZone);
 
-  history = signal<MonthHistory[]>([]);
-  loading = signal(true);
+  periodo = signal<Periodo>('mensal');
+  currentDate = signal<Date>(new Date());
+  extratoGroups = signal<ExtratoGroup[]>([]);
+  loading = signal(false);
 
-  async ngOnInit() {
+  currentDateLabel = computed(() => {
+    const d = this.currentDate();
+    const p = this.periodo();
+    if (p === 'diario') {
+      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    } else if (p === 'mensal') {
+      return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    } else {
+      return d.getFullYear().toString();
+    }
+  });
+
+  ngOnInit() {
+    this.loadData();
+  }
+
+  setPeriodo(p: Periodo) {
+    this.periodo.set(p);
+    this.currentDate.set(new Date()); // Reset to today when changing period
+    this.loadData();
+  }
+
+  prev() {
+    const d = new Date(this.currentDate());
+    const p = this.periodo();
+    if (p === 'diario') d.setDate(d.getDate() - 1);
+    else if (p === 'mensal') d.setMonth(d.getMonth() - 1);
+    else d.setFullYear(d.getFullYear() - 1);
+    this.currentDate.set(d);
+    this.loadData();
+  }
+
+  next() {
+    const d = new Date(this.currentDate());
+    const p = this.periodo();
+    if (p === 'diario') d.setDate(d.getDate() + 1);
+    else if (p === 'mensal') d.setMonth(d.getMonth() + 1);
+    else d.setFullYear(d.getFullYear() + 1);
+    this.currentDate.set(d);
+    this.loadData();
+  }
+
+  async loadData() {
     this.loading.set(true);
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
-    
-    try {
-      const [allExpenses, allIncomes] = await Promise.all([
-        this.expenseService.getForLast12Months(currentYear, currentMonth),
-        this.incomeService.getForLast12Months(currentYear, currentMonth)
-      ]);
+    const userId = this.auth.getCurrentUserId();
+    const date = this.currentDate();
+    const p = this.periodo();
 
-      const months: MonthHistory[] = [];
-      for (let i = 0; i < 12; i++) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const m = d.getMonth() + 1;
-        const y = d.getFullYear();
-        
-        const monthExpenses = allExpenses.filter(e => e.month === m && e.year === y);
-        const monthIncomes = allIncomes.filter(inc => inc.month === m && inc.year === y);
-        
-        const totalExpenses = monthExpenses.reduce((s, e) => s + e.amount, 0);
-        const totalIncome = monthIncomes.reduce((s, inc) => s + inc.amount, 0);
-        
-        months.push({
-          month: m,
-          year: y,
-          label: d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
-          totalExpenses,
-          totalIncome,
-          balance: totalIncome - totalExpenses,
+    let startDateStr = '';
+    let endDateStr = '';
+
+    if (p === 'diario') {
+      startDateStr = date.toISOString().split('T')[0];
+      endDateStr = startDateStr;
+    } else if (p === 'mensal') {
+      const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+      const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      startDateStr = firstDay.toISOString().split('T')[0];
+      endDateStr = lastDay.toISOString().split('T')[0];
+    } else if (p === 'anual') {
+      const firstDay = new Date(date.getFullYear(), 0, 1);
+      const lastDay = new Date(date.getFullYear(), 11, 31);
+      startDateStr = firstDay.toISOString().split('T')[0];
+      endDateStr = lastDay.toISOString().split('T')[0];
+    }
+
+    try {
+      // Fetch Expenses
+      const { data: expenses } = await this.supabase.client
+        .from('expenses')
+        .select('*')
+        .eq('user_id', userId)
+        .gte('date', startDateStr)
+        .lte('date', endDateStr);
+
+      // Fetch Incomes
+      const { data: incomes } = await this.supabase.client
+        .from('incomes')
+        .select('*')
+        .eq('user_id', userId)
+        .gte('date', startDateStr)
+        .lte('date', endDateStr);
+
+      const allTx: Transaction[] = [];
+
+      (expenses || []).forEach(e => {
+        allTx.push({
+          id: e.id,
+          description: e.description,
+          amount: e.amount,
+          date: e.date,
+          type: 'expense',
+          source: e.type, // 'unico', 'fixo', 'parcelado'
+          timestamp: new Date(e.date).getTime()
         });
-      }
+      });
+
+      (incomes || []).forEach(i => {
+        allTx.push({
+          id: i.id,
+          description: i.description,
+          amount: i.amount,
+          date: i.date,
+          type: 'income',
+          source: 'Receita',
+          timestamp: new Date(i.date).getTime()
+        });
+      });
+
+      // Sort descending
+      allTx.sort((a, b) => b.timestamp - a.timestamp);
+
+      // Grouping
+      const groupsMap = new Map<string, ExtratoGroup>();
+
+      allTx.forEach(tx => {
+        const txDate = new Date(tx.date + 'T12:00:00'); // Prevent timezone issues
+        
+        let groupKey = '';
+        let dayStr = '';
+        let monthStr = '';
+
+        if (p === 'anual') {
+          // Group by Month
+          groupKey = txDate.getFullYear() + '-' + txDate.getMonth();
+          dayStr = '';
+          monthStr = txDate.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+        } else {
+          // Group by Day
+          groupKey = tx.date;
+          dayStr = txDate.getDate().toString();
+          monthStr = txDate.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+        }
+
+        if (!groupsMap.has(groupKey)) {
+          groupsMap.set(groupKey, {
+            dateLabel: groupKey,
+            day: dayStr,
+            monthStr: monthStr,
+            transactions: [],
+            saldoDoDia: 0
+          });
+        }
+
+        const group = groupsMap.get(groupKey)!;
+        group.transactions.push(tx);
+        
+        if (tx.type === 'income') {
+          group.saldoDoDia += tx.amount;
+        } else {
+          group.saldoDoDia -= tx.amount;
+        }
+      });
+
+      const finalGroups = Array.from(groupsMap.values());
 
       this.ngZone.run(() => {
-        this.history.set(months);
+        this.extratoGroups.set(finalGroups);
       });
+
     } catch (e) {
-      console.error(e);
+      console.error('Erro ao carregar extrato', e);
     } finally {
       this.ngZone.run(() => {
         this.loading.set(false);
       });
     }
   }
-
-  isCurrentMonth = (item: MonthHistory) => {
-    const now = new Date();
-    return item.month === now.getMonth() + 1 && item.year === now.getFullYear();
-  };
 }
