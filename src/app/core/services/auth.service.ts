@@ -71,7 +71,10 @@ export class AuthService {
     const { data, error } = await this.supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, username } },
+      options: { 
+        data: { name, username },
+        emailRedirectTo: window.location.origin + '/controle-financeiro/login' 
+      },
     });
     if (error) throw error;
     return data;
