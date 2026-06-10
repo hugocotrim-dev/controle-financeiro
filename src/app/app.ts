@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
+import { BottomNavComponent } from './shared/components/bottom-nav/bottom-nav.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, BottomNavComponent],
   template: `
     @if (authService.loading()) {
       <div class="global-loading">
@@ -15,6 +16,9 @@ import { AuthService } from './core/services/auth.service';
         <div class="loading-spinner"></div>
       </div>
     } @else {
+      @if (authService.isLoggedIn()) {
+        <app-bottom-nav />
+      }
       <router-outlet />
     }
   `,

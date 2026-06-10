@@ -7,7 +7,6 @@ import { ExpenseService } from '../../core/services/expense.service';
 import { IncomeService } from '../../core/services/income.service';
 import { BudgetService } from '../../core/services/budget.service';
 import { GoalService } from '../../core/services/goal.service';
-import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
 import { Goal, getGoalStatus } from '../../core/models/goal.model';
 
 Chart.register(...registerables);
@@ -30,14 +29,14 @@ interface Insight {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, BottomNavComponent],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="app-container">
       <!-- Header -->
-      <header class="dashboard-header">
+      <header class="page-header">
         <div class="header-left">
           <p class="greeting">{{ greeting() }}</p>
-          <h2 class="user-name">{{ profile()?.name ?? 'Usuário' }} 👋</h2>
+          <h2 class="user-name">{{ profile()?.username ?? 'Usuário' }} 👋</h2>
         </div>
         <div class="header-right">
           <div class="month-selector">
@@ -45,7 +44,7 @@ interface Insight {
               <span class="material-icons-round">chevron_left</span>
             </button>
             <span class="month-label">{{ currentMonthLabel() }}</span>
-            <button class="month-btn" (click)="nextMonth()" [disabled]="isCurrentMonth()">
+            <button class="month-btn" (click)="nextMonth()">
               <span class="material-icons-round">chevron_right</span>
             </button>
           </div>
@@ -170,7 +169,7 @@ interface Insight {
               @for (goal of goals().slice(0, 3); track goal.id) {
                 <div class="goal-mini-card">
                   <div class="goal-mini-header">
-                    <span class="goal-mini-name">{{ goal.name }}</span>
+                    <span class="goal-mini-name">{{ goal.name }} <span style="font-size:0.65rem;color:var(--color-text-muted);font-weight:normal;margin-left:4px;">({{ goal.type === 'mensal' ? 'Mensal' : 'Anual' }})</span></span>
                     <span class="badge" [class]="'badge-' + getGoalStatusColor(goal)">
                       {{ (goal.current_amount / goal.limit_amount * 100) | number:'1.0-0' }}%
                     </span>
@@ -217,14 +216,12 @@ interface Insight {
           </div>
         </section>
       </main>
-
-      <app-bottom-nav />
     </div>
   `,
   styles: [`
     .app-container { min-height:100vh;background:var(--color-bg-primary); }
 
-    .dashboard-header {
+    .page-header {
       background: rgba(0,0,0,0.9);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--color-border);
@@ -370,7 +367,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async nextMonth() {
-    if (this.isCurrentMonth()) return;
     const d = new Date(this.currentDate());
     d.setMonth(d.getMonth() + 1);
     this.currentDate.set(d);
@@ -387,7 +383,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.expenseService.getByMonth(month, year),
         this.incomeService.getTotalByMonth(month, year),
         this.budgetService.getByMonth(month, year),
-        this.goalService.getAll(),
+        this.goalService.getForPeriod(month, year),
       ]);
 
       const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);

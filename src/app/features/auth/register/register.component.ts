@@ -43,6 +43,18 @@ import { AuthService } from '../../../core/services/auth.service';
 
           <form #registerForm="ngForm" (ngSubmit)="onSubmit(registerForm)" novalidate>
             <div class="form-group">
+              <label class="form-label" for="username">Username</label>
+              <div class="input-wrapper">
+                <span class="material-icons-round input-icon">alternate_email</span>
+                <input id="username" name="username" type="text" class="form-control with-icon"
+                  placeholder="nomedeusuario" [(ngModel)]="username" required minlength="3" pattern="^[a-zA-Z0-9_]+$" #usernameInput="ngModel" />
+              </div>
+              @if (usernameInput.invalid && usernameInput.touched) {
+                <span class="field-error">Username inválido (mínimo 3 caracteres, sem espaços)</span>
+              }
+            </div>
+
+            <div class="form-group" style="margin-top:1rem">
               <label class="form-label" for="name">Nome completo</label>
               <div class="input-wrapper">
                 <span class="material-icons-round input-icon">person</span>
@@ -123,6 +135,7 @@ import { AuthService } from '../../../core/services/auth.service';
   `]
 })
 export class RegisterComponent {
+  username = '';
   name = '';
   email = '';
   password = '';
@@ -138,7 +151,7 @@ export class RegisterComponent {
     this.loading.set(true);
     this.error.set('');
     try {
-      await this.authService.signUp(this.email, this.password, this.name);
+      await this.authService.signUp(this.username, this.email, this.password, this.name);
       this.success.set(true);
     } catch (err: any) {
       this.error.set(err.message ?? 'Erro ao criar conta.');

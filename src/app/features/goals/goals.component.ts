@@ -4,19 +4,27 @@ import { FormsModule } from '@angular/forms';
 import { GoalService } from '../../core/services/goal.service';
 import { ExpenseService } from '../../core/services/expense.service';
 import { Goal, GoalType, getGoalStatus } from '../../core/models/goal.model';
-import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
-
+import { CurrencyFormatDirective } from '../../shared/directives/currency-format.directive';
 @Component({
   selector: 'app-goals',
   standalone: true,
-  imports: [CommonModule, FormsModule, BottomNavComponent],
+  imports: [CommonModule, FormsModule, CurrencyFormatDirective],
   template: `
     <div class="app-container">
       <header class="page-header">
-        <h1 class="page-title">Metas Financeiras</h1>
-        <button class="btn-icon" (click)="openAdd()">
-          <span class="material-icons-round">add</span>
-        </button>
+        <div class="header-left">
+          <h1 class="page-title">Metas Financeiras</h1>
+        </div>
+        <div class="header-right" style="display:flex;gap:1rem;align-items:center;">
+          <div class="month-selector" style="display:flex;align-items:center;gap:0.25rem;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:12px;padding:0.25rem;">
+            <button class="month-btn" (click)="prevMonth()" style="background:none;border:none;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;cursor:pointer;"><span class="material-icons-round">chevron_left</span></button>
+            <span class="month-label" style="font-size:0.8125rem;font-weight:600;min-width:70px;text-align:center;">{{ currentMonthLabel() }}</span>
+            <button class="month-btn" (click)="nextMonth()" style="background:none;border:none;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;cursor:pointer;"><span class="material-icons-round">chevron_right</span></button>
+          </div>
+          <button class="btn-icon" (click)="openAdd()">
+            <span class="material-icons-round">add</span>
+          </button>
+        </div>
       </header>
 
       <main class="page-content">
@@ -43,7 +51,7 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
                   <div>
                     <div class="goal-name">{{ goal.name }}</div>
                     <div class="goal-type badge" [class]="'badge-' + (goal.type === 'mensal' ? 'accent' : 'blue')">
-                      {{ goal.type === 'mensal' ? 'Mensal' : 'Anual' }}
+                      {{ goal.type === 'mensal' ? 'Mensal' : 'Anual' }} • {{ getPeriodLabel(goal) }}
                     </div>
                   </div>
                   <div class="goal-pct" [class]="'pct-' + getStatus(goal)">
@@ -86,7 +94,7 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Valor limite (R$)</label>
-                  <input type="number" class="form-control" [(ngModel)]="form.limit_amount" placeholder="0,00" step="0.01" min="0" />
+                  <input type="text" inputmode="numeric" class="form-control" appCurrencyFormat [(ngModel)]="form.limit_amount" placeholder="0,00" />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Tipo</label>
@@ -96,10 +104,34 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
                   </select>
                 </div>
               </div>
+              
+              <div class="form-row">
+                @if (form.type === 'mensal') {
+                  <div class="form-group">
+                    <label class="form-label">Mês de Referência</label>
+                    <input type="month" class="form-control" [(ngModel)]="form.monthStr" />
+                  </div>
+                } @else {
+                  <div class="form-group">
+                    <label class="form-label">Ano de Referência</label>
+                    <input type="number" class="form-control" [(ngModel)]="form.year" min="2000" max="2100" />
+                  </div>
+                }
+              </div>
+
+              @if (!editingGoal()) {
+                <div class="form-group" style="background:rgba(255,255,255,0.03);padding:0.75rem;border-radius:12px;border:1px solid var(--color-border);">
+                  <label style="display:flex;align-items:center;gap:0.75rem;font-size:0.875rem;cursor:pointer;color:var(--color-text-secondary);">
+                    <input type="checkbox" [(ngModel)]="form.calculateFromExisting" style="width:18px;height:18px;accent-color:var(--color-accent);" />
+                    Calcular valor atual usando gastos já existentes do período
+                  </label>
+                </div>
+              }
+
               @if (editingGoal()) {
                 <div class="form-group">
                   <label class="form-label">Valor atual (R$)</label>
-                  <input type="number" class="form-control" [(ngModel)]="form.current_amount" placeholder="0,00" step="0.01" min="0" />
+                  <input type="text" inputmode="numeric" class="form-control" appCurrencyFormat [(ngModel)]="form.current_amount" placeholder="0,00" />
                 </div>
               }
               <div class="modal-actions">
@@ -118,8 +150,6 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
           </div>
         </div>
       }
-
-      <app-bottom-nav />
     </div>
   `,
   styles: [`
@@ -162,6 +192,7 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
 export class GoalsComponent implements OnInit {
   protected Math = Math;
   private goalService = inject(GoalService);
+  private expenseService = inject(ExpenseService);
 
   goals = signal<Goal[]>([]);
   loading = signal(true);
@@ -169,30 +200,90 @@ export class GoalsComponent implements OnInit {
   showModal = signal(false);
   editingGoal = signal<Goal | null>(null);
 
-  form: { name: string; limit_amount: number; type: GoalType; current_amount: number } = { name: '', limit_amount: 0, type: 'mensal', current_amount: 0 };
+  currentDate = signal(new Date());
+  currentMonthLabel = () => this.currentDate().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+  form: { name: string; limit_amount: number; type: GoalType; current_amount: number; monthStr: string; year: number; calculateFromExisting: boolean } = { 
+    name: '', limit_amount: 0, type: 'mensal', current_amount: 0, 
+    monthStr: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`, 
+    year: new Date().getFullYear(),
+    calculateFromExisting: false
+  };
 
   async ngOnInit() { await this.loadGoals(); }
 
+  async prevMonth() { const d = new Date(this.currentDate()); d.setMonth(d.getMonth() - 1); this.currentDate.set(d); await this.loadGoals(); }
+  async nextMonth() { const d = new Date(this.currentDate()); d.setMonth(d.getMonth() + 1); this.currentDate.set(d); await this.loadGoals(); }
+
   private async loadGoals() {
     this.loading.set(true);
-    try { this.goals.set(await this.goalService.getAll()); } finally { this.loading.set(false); }
+    const month = this.currentDate().getMonth() + 1;
+    const year = this.currentDate().getFullYear();
+    try { this.goals.set(await this.goalService.getForPeriod(month, year)); } finally { this.loading.set(false); }
   }
 
   getStatus = (goal: Goal) => getGoalStatus(goal.current_amount, goal.limit_amount);
   getPercent = (goal: Goal) => goal.limit_amount > 0 ? (goal.current_amount / goal.limit_amount) * 100 : 0;
   getProgressClass = (goal: Goal) => { const s = this.getStatus(goal); return s === 'safe' ? 'green' : s === 'warning' ? 'yellow' : 'red'; };
   getPrediction = (goal: Goal) => this.goalService.predictOverflow(goal.current_amount, goal.limit_amount);
+  getPeriodLabel = (goal: Goal) => goal.type === 'mensal' ? `${String(goal.month).padStart(2, '0')}/${goal.year}` : `${goal.year}`;
 
-  openAdd() { this.editingGoal.set(null); this.form = { name: '', limit_amount: 0, type: 'mensal', current_amount: 0 }; this.showModal.set(true); }
-  openEdit(goal: Goal) { this.editingGoal.set(goal); this.form = { name: goal.name, limit_amount: goal.limit_amount, type: goal.type, current_amount: goal.current_amount }; this.showModal.set(true); }
+  openAdd() { 
+    this.editingGoal.set(null); 
+    this.form = { 
+      name: '', limit_amount: 0, type: 'mensal', current_amount: 0,
+      monthStr: `${this.currentDate().getFullYear()}-${String(this.currentDate().getMonth() + 1).padStart(2, '0')}`,
+      year: this.currentDate().getFullYear(),
+      calculateFromExisting: false
+    }; 
+    this.showModal.set(true); 
+  }
+  openEdit(goal: Goal) { 
+    this.editingGoal.set(goal); 
+    const m = goal.month ? String(goal.month).padStart(2, '0') : '01';
+    const y = goal.year || this.currentDate().getFullYear();
+    this.form = { 
+      name: goal.name, limit_amount: goal.limit_amount, type: goal.type, current_amount: goal.current_amount,
+      monthStr: `${y}-${m}`, year: y, calculateFromExisting: false
+    }; 
+    this.showModal.set(true); 
+  }
   closeModal() { this.showModal.set(false); }
 
   async saveGoal() {
     if (!this.form.name || !this.form.limit_amount) return;
     this.saving.set(true);
+    
+    let targetMonth: number | undefined;
+    let targetYear: number;
+    
+    if (this.form.type === 'mensal') {
+      const [yy, mm] = this.form.monthStr.split('-');
+      targetYear = parseInt(yy, 10);
+      targetMonth = parseInt(mm, 10);
+    } else {
+      targetYear = this.form.year;
+    }
+
+    let initialCurrentAmount = 0;
+    if (this.form.calculateFromExisting && !this.editingGoal()) {
+      if (this.form.type === 'mensal') {
+        initialCurrentAmount = await this.expenseService.getTotalByMonth(targetMonth!, targetYear);
+      } else {
+        let total = 0;
+        for (let m = 1; m <= 12; m++) {
+          total += await this.expenseService.getTotalByMonth(m, targetYear);
+        }
+        initialCurrentAmount = total;
+      }
+    }
+
     try {
-      if (this.editingGoal()) await this.goalService.update(this.editingGoal()!.id, this.form);
-      else await this.goalService.create({ name: this.form.name, limit_amount: this.form.limit_amount, type: this.form.type });
+      if (this.editingGoal()) {
+        await this.goalService.update(this.editingGoal()!.id, { ...this.form, month: targetMonth, year: targetYear });
+      } else {
+        await this.goalService.create({ name: this.form.name, limit_amount: this.form.limit_amount, type: this.form.type, month: targetMonth, year: targetYear, current_amount: initialCurrentAmount });
+      }
       this.closeModal(); await this.loadGoals();
     } catch (e) { console.error(e); } finally { this.saving.set(false); }
   }

@@ -1,6 +1,7 @@
 export interface UserProfile {
   id: string;
   email: string;
+  username: string;
   name: string;
   role: 'admin' | 'user';
   avatar_url?: string;

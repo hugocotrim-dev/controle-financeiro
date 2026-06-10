@@ -20,10 +20,21 @@ export class GoalService {
     return (data ?? []) as Goal[];
   }
 
-  async create(goal: Omit<Goal, 'id' | 'created_at' | 'user_id' | 'current_amount'>): Promise<Goal> {
+  async getForPeriod(month: number, year: number): Promise<Goal[]> {
     const { data, error } = await this.supabase.client
       .from('goals')
-      .insert({ ...goal, user_id: this.auth.getCurrentUserId(), current_amount: 0 })
+      .select('*')
+      .eq('user_id', this.auth.getCurrentUserId())
+      .or(`and(type.eq.mensal,month.eq.${month},year.eq.${year}),and(type.eq.anual,year.eq.${year})`);
+    
+    if (error) throw error;
+    return (data ?? []) as Goal[];
+  }
+
+  async create(goal: Omit<Goal, 'id' | 'created_at' | 'user_id'>): Promise<Goal> {
+    const { data, error } = await this.supabase.client
+      .from('goals')
+      .insert({ ...goal, user_id: this.auth.getCurrentUserId() })
       .select()
       .single();
     if (error) throw error;

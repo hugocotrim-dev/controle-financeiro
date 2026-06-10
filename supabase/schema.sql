@@ -20,6 +20,17 @@ CREATE TABLE IF NOT EXISTS profiles (
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+-- Helper function to check if user is admin (avoids infinite recursion in RLS)
+CREATE OR REPLACE FUNCTION public.is_admin(user_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = user_id AND role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 CREATE POLICY "Users can view own profile" ON profiles
   FOR SELECT USING (auth.uid() = id);
 
@@ -28,7 +39,7 @@ CREATE POLICY "Users can update own profile" ON profiles
 
 CREATE POLICY "Admins can view all profiles" ON profiles
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin(auth.uid())
   );
 
 -- Auto-create profile on signup
@@ -127,7 +138,7 @@ CREATE POLICY "Users manage own expenses" ON expenses
 
 CREATE POLICY "Admins read all expenses" ON expenses
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin(auth.uid())
   );
 
 CREATE INDEX idx_expenses_user_month_year ON expenses(user_id, month, year);
@@ -154,7 +165,7 @@ CREATE POLICY "Users manage own incomes" ON incomes
 
 CREATE POLICY "Admins read all incomes" ON incomes
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin(auth.uid())
   );
 
 CREATE INDEX idx_incomes_user_month_year ON incomes(user_id, month, year);

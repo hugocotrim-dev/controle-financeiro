@@ -22,6 +22,22 @@ export class ExpenseService {
     return (data ?? []) as Expense[];
   }
 
+  async getForLast12Months(year: number, month: number): Promise<Expense[]> {
+    const startDate = new Date(year - 1, month, 1); // 12 months ago
+    const endDate = new Date(year, month, 0); // end of current month
+
+    const { data, error } = await this.supabase.client
+      .from('expenses')
+      .select('*, category:categories(*)')
+      .eq('user_id', this.auth.getCurrentUserId())
+      .gte('date', startDate.toISOString().split('T')[0])
+      .lte('date', endDate.toISOString().split('T')[0])
+      .order('date', { ascending: false });
+      
+    if (error) throw error;
+    return (data ?? []) as Expense[];
+  }
+
   async create(expense: Omit<Expense, 'id' | 'created_at' | 'user_id' | 'category'>): Promise<Expense> {
     const { data, error } = await this.supabase.client
       .from('expenses')

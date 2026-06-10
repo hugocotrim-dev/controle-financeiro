@@ -3,14 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { BudgetService } from '../../core/services/budget.service';
-import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
-
+import { CurrencyFormatDirective } from '../../shared/directives/currency-format.directive';
 type ThemeOption = 'dark' | 'light' | 'system';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, BottomNavComponent],
+  imports: [CommonModule, FormsModule, CurrencyFormatDirective],
   template: `
     <div class="app-container">
       <header class="page-header">
@@ -42,8 +41,8 @@ type ThemeOption = 'dark' | 'light' | 'system';
           </h3>
           <div class="settings-card">
             <div class="form-group">
-              <label class="form-label">Valor do orçamento (R$)</label>
-              <input type="number" class="form-control" [(ngModel)]="budgetAmount" placeholder="Ex: 3000" step="50" min="0" />
+              <label class="form-label">Orçamento Total Desejado (R$)</label>
+              <input type="text" inputmode="numeric" class="form-control" appCurrencyFormat [(ngModel)]="budgetAmount" placeholder="Ex: 3000,00" />
             </div>
             <button class="btn btn-primary" style="width:100%;margin-top:0.75rem" (click)="saveBudget()" [disabled]="savingBudget()">
               @if (savingBudget()) { <span class="spinner-sm"></span> }
@@ -105,8 +104,6 @@ type ThemeOption = 'dark' | 'light' | 'system';
 
         <div class="app-version">FinanceFlow v1.0.0</div>
       </main>
-
-      <app-bottom-nav />
     </div>
   `,
   styles: [`

@@ -50,18 +50,51 @@ export class AuthService {
     if (data) this._profile.set(data as UserProfile);
   }
 
-  async signUp(email: string, password: string, name: string) {
+  async signUp(username: string, email: string, password: string, name: string) {
+    // 1. Verificação prévia de duplicidade (Username e Email)
+    const { data: existingUser } = await this.supabase.client
+      .from('profiles')
+      .select('email, username')
+      .or(`email.eq.${email},username.eq.${username}`)
+      .maybeSingle();
+
+    if (existingUser) {
+      if (existingUser.email === email) {
+        throw new Error('Este e-mail já está em uso.');
+      }
+      if (existingUser.username === username) {
+        throw new Error('Este username já está em uso.');
+      }
+    }
+
+    // 2. Criar a conta no Supabase Auth
     const { data, error } = await this.supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } },
+      options: { data: { name, username } },
     });
     if (error) throw error;
     return data;
   }
 
-  async signIn(email: string, password: string) {
-    const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
+  async signIn(emailOrUsername: string, password: string) {
+    let loginEmail = emailOrUsername;
+
+    // Se não tiver '@', assumimos que é um username e tentamos buscar o e-mail real
+    if (!loginEmail.includes('@')) {
+      const { data, error } = await this.supabase.client
+        .from('profiles')
+        .select('email')
+        .eq('username', loginEmail)
+        .maybeSingle();
+
+      if (!data || error) {
+        throw new Error('Usuário não encontrado.');
+      }
+      loginEmail = data.email;
+    }
+
+    const { data, error } = await this.supabase.auth.signInWithPassword({ email: loginEmail, password });
     if (error) throw error;
     return data;
   }
