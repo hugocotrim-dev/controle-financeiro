@@ -45,6 +45,25 @@ type Periodo = 'diario' | 'mensal' | 'anual';
         <button class="nav-btn" (click)="next()"><span class="material-icons-round">chevron_right</span></button>
       </div>
 
+      @if (!loading() && extratoGroups().length > 0) {
+        <div class="period-summary">
+          <div class="summary-item">
+            <span class="lbl">Entradas</span>
+            <span class="val income">{{ totalEntradas() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="lbl">Saídas</span>
+            <span class="val expense">-{{ totalSaidas() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+          </div>
+          <div class="summary-item total">
+            <span class="lbl">Saldo Geral</span>
+            <span class="val" [class.income]="saldoGeral() >= 0" [class.expense]="saldoGeral() < 0">
+              {{ saldoGeral() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+            </span>
+          </div>
+        </div>
+      }
+
       <main class="page-content">
         @if (loading()) {
           <div style="padding: 1rem 1.25rem;">
@@ -102,6 +121,14 @@ type Periodo = 'diario' | 'mensal' | 'anual';
 
     .empty-state { text-align: center; padding: 3rem 1.25rem; color: var(--color-text-muted); font-size: 0.875rem; }
 
+    .period-summary { display: flex; justify-content: space-between; padding: 1rem 1.25rem; margin: 0 1.25rem 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; }
+    .summary-item { display: flex; flex-direction: column; gap: 4px; }
+    .summary-item.total { align-items: flex-end; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1rem; }
+    .summary-item .lbl { font-size: 0.75rem; color: var(--color-text-muted); }
+    .summary-item .val { font-size: 0.875rem; font-weight: 700; }
+    .val.income { color: var(--color-green); }
+    .val.expense { color: var(--color-red); }
+
     .timeline { display: flex; flex-direction: column; padding: 0 1.25rem 2rem; }
     .timeline-group { display: flex; gap: 1rem; }
     .timeline-date { width: 45px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; padding-top: 4px; }
@@ -136,6 +163,10 @@ export class HistoryComponent implements OnInit {
   currentDate = signal<Date>(new Date());
   extratoGroups = signal<ExtratoGroup[]>([]);
   loading = signal(false);
+
+  totalEntradas = signal<number>(0);
+  totalSaidas = signal<number>(0);
+  saldoGeral = signal<number>(0);
 
   currentDateLabel = computed(() => {
     const d = this.currentDate();
@@ -221,8 +252,11 @@ export class HistoryComponent implements OnInit {
         .lte('date', endDateStr);
 
       const allTx: Transaction[] = [];
+      let tEntradas = 0;
+      let tSaidas = 0;
 
       (expenses || []).forEach(e => {
+        tSaidas += e.amount;
         allTx.push({
           id: e.id,
           description: e.description,
@@ -235,6 +269,7 @@ export class HistoryComponent implements OnInit {
       });
 
       (incomes || []).forEach(i => {
+        tEntradas += i.amount;
         allTx.push({
           id: i.id,
           description: i.description,
@@ -294,6 +329,9 @@ export class HistoryComponent implements OnInit {
       const finalGroups = Array.from(groupsMap.values());
 
       this.ngZone.run(() => {
+        this.totalEntradas.set(tEntradas);
+        this.totalSaidas.set(tSaidas);
+        this.saldoGeral.set(tEntradas - tSaidas);
         this.extratoGroups.set(finalGroups);
       });
 
