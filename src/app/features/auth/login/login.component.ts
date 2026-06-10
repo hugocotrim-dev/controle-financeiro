@@ -38,23 +38,22 @@ import { AuthService } from '../../../core/services/auth.service';
 
           <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" novalidate>
             <div class="form-group">
-              <label class="form-label" for="email">E-mail</label>
+              <label class="form-label" for="emailOrUsername">Username ou E-mail</label>
               <div class="input-wrapper">
-                <span class="material-icons-round input-icon">email</span>
+                <span class="material-icons-round input-icon">person</span>
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
+                  id="emailOrUsername"
+                  name="emailOrUsername"
+                  type="text"
                   class="form-control with-icon"
-                  placeholder="seu@email.com"
-                  [(ngModel)]="email"
+                  placeholder="nomedeusuario ou seu@email.com"
+                  [(ngModel)]="emailOrUsername"
                   required
-                  email
                   #emailInput="ngModel"
                 />
               </div>
               @if (emailInput.invalid && emailInput.touched) {
-                <span class="field-error">E-mail inválido</span>
+                <span class="field-error">Campo obrigatório</span>
               }
             </div>
 
@@ -282,7 +281,7 @@ import { AuthService } from '../../../core/services/auth.service';
   `]
 })
 export class LoginComponent {
-  email = '';
+  emailOrUsername = '';
   password = '';
   loading = signal(false);
   error = signal('');
@@ -298,7 +297,7 @@ export class LoginComponent {
     this.loading.set(true);
     this.error.set('');
     try {
-      await this.authService.signIn(this.email, this.password);
+      await this.authService.signIn(this.emailOrUsername, this.password);
       this.router.navigate(['/dashboard']);
     } catch (err: any) {
       this.error.set(err.message ?? 'Erro ao entrar. Verifique suas credenciais.');

@@ -3,32 +3,28 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IncomeService } from '../../core/services/income.service';
 import { Income, IncomeType, INCOME_TYPE_LABELS } from '../../core/models';
-import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
-
+import { CurrencyFormatDirective } from '../../shared/directives/currency-format.directive';
 @Component({
   selector: 'app-income',
   standalone: true,
-  imports: [CommonModule, FormsModule, BottomNavComponent],
+  imports: [CommonModule, FormsModule, CurrencyFormatDirective],
   template: `
     <div class="app-container">
       <header class="page-header">
         <h1 class="page-title">Receitas</h1>
-        <div class="month-selector">
-          <button class="month-btn" (click)="prevMonth()"><span class="material-icons-round">chevron_left</span></button>
-          <span class="month-label">{{ currentMonthLabel() }}</span>
-          <button class="month-btn" (click)="nextMonth()" [disabled]="isCurrentMonth()"><span class="material-icons-round">chevron_right</span></button>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <div class="month-selector">
+            <button class="month-btn" (click)="prevMonth()"><span class="material-icons-round">chevron_left</span></button>
+            <span class="month-label">{{ currentMonthLabel() }}</span>
+            <button class="month-btn" (click)="nextMonth()"><span class="material-icons-round">chevron_right</span></button>
+          </div>
+          <button class="btn-icon" (click)="openAdd()" aria-label="Adicionar receita">
+            <span class="material-icons-round">add</span>
+          </button>
         </div>
       </header>
 
       <main class="page-content">
-        <div class="total-card animate-fade-in">
-          <span class="material-icons-round total-icon">trending_up</span>
-          <div>
-            <div class="total-label">Total de receitas</div>
-            <div class="total-value">{{ totalIncome() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
-          </div>
-        </div>
-
         @if (loading()) {
           <div style="padding:0 1rem">
             @for (i of [1,2,3]; track i) {
@@ -36,12 +32,27 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
             }
           </div>
         } @else if (incomes().length === 0) {
-          <div class="empty-state">
+          <div class="empty-state animate-fade-in">
             <span class="material-icons-round empty-icon">savings</span>
             <p class="empty-title">Nenhuma receita</p>
             <p class="empty-desc">Adicione suas receitas para calcular seu saldo</p>
+            <button class="btn btn-success" (click)="openAdd()" style="margin-top:1rem">
+              <span class="material-icons-round">add</span> Nova receita
+            </button>
           </div>
         } @else {
+          <!-- Total Card -->
+          <div class="total-card animate-fade-in">
+            <span class="material-icons-round total-icon">trending_up</span>
+            <div style="flex: 1;">
+              <div class="total-label">Total de receitas</div>
+              <div class="total-value">{{ totalIncome() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
+            </div>
+            <button class="btn btn-success" (click)="openAdd()" style="border-radius: 12px; padding: 0.5rem 1rem; font-size: 0.875rem;">
+              <span class="material-icons-round" style="font-size: 18px;">add</span> Nova receita
+            </button>
+          </div>
+
           <div class="income-list stagger-children">
             @for (income of incomes(); track income.id) {
               <div class="income-item" (click)="openEdit(income)">
@@ -62,9 +73,7 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
         }
       </main>
 
-      <button class="fab" (click)="openAdd()" style="background:var(--gradient-green)">
-        <span class="material-icons-round">add</span>
-      </button>
+
 
       @if (showModal()) {
         <div class="modal-overlay" (click)="closeModal()">
@@ -79,7 +88,7 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Valor (R$)</label>
-                  <input type="number" class="form-control" [(ngModel)]="form.amount" placeholder="0,00" step="0.01" min="0" />
+                  <input type="text" inputmode="numeric" class="form-control" appCurrencyFormat [(ngModel)]="form.amount" placeholder="0,00" />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Data</label>
@@ -110,14 +119,13 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
           </div>
         </div>
       }
-
-      <app-bottom-nav />
     </div>
   `,
   styles: [`
     .app-container { min-height:100vh;background:var(--color-bg-primary); }
     .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem 1rem 4.5rem;display:flex;align-items:center;justify-content:space-between; }
     .page-title { font-size:1.125rem;font-weight:700; }
+    .btn-icon { background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-secondary);transition:all 150ms; &:hover{color:var(--color-text-primary);} .material-icons-round{font-size:20px;} }
     .month-selector { display:flex;align-items:center;gap:0.25rem;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:12px;padding:0.25rem; }
     .month-btn { background:none;border:none;cursor:pointer;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;border-radius:8px;transition:all 150ms; &:hover:not(:disabled){color:var(--color-text-primary);} &:disabled{opacity:0.3;} .material-icons-round{font-size:18px;} }
     .month-label { font-size:0.8125rem;font-weight:600;padding:0 0.25rem;min-width:70px;text-align:center; }
@@ -177,7 +185,7 @@ export class IncomeComponent implements OnInit {
   async ngOnInit() { await this.loadIncomes(); }
 
   async prevMonth() { const d = new Date(this.currentDate()); d.setMonth(d.getMonth() - 1); this.currentDate.set(d); await this.loadIncomes(); }
-  async nextMonth() { if (this.isCurrentMonth()) return; const d = new Date(this.currentDate()); d.setMonth(d.getMonth() + 1); this.currentDate.set(d); await this.loadIncomes(); }
+  async nextMonth() { const d = new Date(this.currentDate()); d.setMonth(d.getMonth() + 1); this.currentDate.set(d); await this.loadIncomes(); }
 
   private async loadIncomes() {
     this.loading.set(true);

@@ -22,6 +22,22 @@ export class IncomeService {
     return (data ?? []) as Income[];
   }
 
+  async getForLast12Months(year: number, month: number): Promise<Income[]> {
+    const startDate = new Date(year - 1, month, 1);
+    const endDate = new Date(year, month, 0);
+
+    const { data, error } = await this.supabase.client
+      .from('incomes')
+      .select('*')
+      .eq('user_id', this.auth.getCurrentUserId())
+      .gte('date', startDate.toISOString().split('T')[0])
+      .lte('date', endDate.toISOString().split('T')[0])
+      .order('date', { ascending: false });
+
+    if (error) throw error;
+    return (data ?? []) as Income[];
+  }
+
   async create(income: Omit<Income, 'id' | 'created_at' | 'user_id'>): Promise<Income> {
     const { data, error } = await this.supabase.client
       .from('incomes')

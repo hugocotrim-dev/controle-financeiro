@@ -7,6 +7,8 @@ export interface Goal {
   name: string;
   limit_amount: number;
   type: GoalType;
+  month?: number;
+  year?: number;
   current_amount: number;
   created_at: string;
 }

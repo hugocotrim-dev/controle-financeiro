@@ -4,97 +4,113 @@ import { FormsModule } from '@angular/forms';
 import { ExpenseService } from '../../core/services/expense.service';
 import { CategoryService } from '../../core/services/category.service';
 import { Expense, Category, ExpenseType } from '../../core/models';
-import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
+import { CurrencyFormatDirective } from '../../shared/directives/currency-format.directive';
 
 @Component({
   selector: 'app-expenses',
   standalone: true,
-  imports: [CommonModule, FormsModule, BottomNavComponent],
+  imports: [CommonModule, FormsModule, CurrencyFormatDirective],
   template: `
     <div class="app-container">
       <!-- Header -->
       <header class="page-header">
         <h1 class="page-title">Gastos</h1>
-        <div class="month-selector">
-          <button class="month-btn" (click)="prevMonth()">
-            <span class="material-icons-round">chevron_left</span>
-          </button>
-          <span class="month-label">{{ currentMonthLabel() }}</span>
-          <button class="month-btn" (click)="nextMonth()" [disabled]="isCurrentMonth()">
-            <span class="material-icons-round">chevron_right</span>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <div class="month-selector">
+            <button class="month-btn" (click)="prevMonth()">
+              <span class="material-icons-round">chevron_left</span>
+            </button>
+            <span class="month-label">{{ currentMonthLabel() }}</span>
+            <button class="month-btn" (click)="nextMonth()">
+              <span class="material-icons-round">chevron_right</span>
+            </button>
+          </div>
+          <button class="btn-icon" (click)="openAdd()" aria-label="Adicionar gasto">
+            <span class="material-icons-round">add</span>
           </button>
         </div>
       </header>
 
       <main class="page-content">
-        <!-- Total Card -->
-        <div class="total-card animate-fade-in">
-          <span class="material-icons-round total-icon">payments</span>
-          <div>
-            <div class="total-label">Total de gastos</div>
-            <div class="total-value">{{ totalExpenses() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
-          </div>
-        </div>
-
-        <!-- Category Filter -->
-        <div class="filter-chips">
-          <button class="chip" [class.active]="selectedCategory() === null" (click)="selectedCategory.set(null)">
-            Todos
-          </button>
-          @for (cat of categories(); track cat.id) {
-            <button class="chip" [class.active]="selectedCategory() === cat.id" (click)="selectedCategory.set(cat.id)">
-              <span class="material-icons-round" [style.color]="cat.color" style="font-size:14px">{{ cat.icon }}</span>
-              {{ cat.name }}
-            </button>
-          }
-        </div>
-
-        <!-- Expense List -->
         @if (loading()) {
           <div class="loading-list">
             @for (i of [1,2,3,4,5]; track i) {
               <div class="skeleton" style="height:72px;border-radius:16px;margin-bottom:0.5rem"></div>
             }
           </div>
-        } @else if (filteredExpenses().length === 0) {
-          <div class="empty-state">
+        } @else if (expenses().length === 0) {
+          <div class="empty-state animate-fade-in">
             <span class="material-icons-round empty-icon">receipt_long</span>
             <p class="empty-title">Nenhum gasto encontrado</p>
-            <p class="empty-desc">Adicione um gasto clicando no botão abaixo</p>
+            <p class="empty-desc">Adicione um gasto para controlar suas finanças</p>
+            <button class="btn btn-primary" (click)="openAdd()" style="margin-top:1rem">
+              <span class="material-icons-round">add</span> Novo gasto
+            </button>
           </div>
         } @else {
-          <div class="expense-list stagger-children">
-            @for (expense of filteredExpenses(); track expense.id) {
-              <div class="expense-item" (click)="openEdit(expense)">
-                <div class="expense-icon" [style.background]="getCategoryColor(expense) + '22'">
-                  <span class="material-icons-round" [style.color]="getCategoryColor(expense)">
-                    {{ getCategoryIcon(expense) }}
-                  </span>
-                </div>
-                <div class="expense-info">
-                  <div class="expense-desc">{{ expense.description }}</div>
-                  <div class="expense-meta">
-                    <span class="badge badge-gray">{{ expense.category?.name ?? 'Sem categoria' }}</span>
-                    @if (expense.type === 'parcelado') {
-                      <span class="badge badge-accent">{{ expense.installment_number }}/{{ expense.total_installments }}x</span>
-                    }
-                    @if (expense.type === 'recorrente') {
-                      <span class="badge badge-yellow">Recorrente</span>
-                    }
-                  </div>
-                  <div class="expense-date">{{ expense.date | date:'dd/MM/yyyy':'':'pt-BR' }}</div>
-                </div>
-                <div class="expense-amount">{{ expense.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
-              </div>
+          <!-- Total Card -->
+          <div class="total-card animate-fade-in">
+            <span class="material-icons-round total-icon">payments</span>
+            <div style="flex: 1;">
+              <div class="total-label">Total de gastos</div>
+              <div class="total-value">{{ totalExpenses() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
+            </div>
+            <button class="btn btn-primary" (click)="openAdd()" style="border-radius: 12px; padding: 0.5rem 1rem; font-size: 0.875rem;">
+              <span class="material-icons-round" style="font-size: 18px;">add</span> Novo gasto
+            </button>
+          </div>
+
+          <!-- Category Filter -->
+          <div class="filter-chips">
+            <button class="chip" [class.active]="selectedCategory() === null" (click)="selectedCategory.set(null)">
+              Todos
+            </button>
+            @for (cat of categories(); track cat.id) {
+              <button class="chip" [class.active]="selectedCategory() === cat.id" (click)="selectedCategory.set(cat.id)">
+                <span class="material-icons-round" [style.color]="cat.color" style="font-size:14px">{{ cat.icon }}</span>
+                {{ cat.name }}
+              </button>
             }
           </div>
+
+          <!-- Expense List -->
+          @if (filteredExpenses().length === 0) {
+            <div class="empty-state">
+              <span class="material-icons-round empty-icon">receipt_long</span>
+              <p class="empty-title">Nenhum gasto nesta categoria</p>
+              <p class="empty-desc">Escolha outra categoria ou adicione um novo gasto</p>
+            </div>
+          } @else {
+            <div class="expense-list stagger-children">
+              @for (expense of filteredExpenses(); track expense.id) {
+                <div class="expense-item" (click)="openEdit(expense)">
+                  <div class="expense-icon" [style.background]="getCategoryColor(expense) + '22'">
+                    <span class="material-icons-round" [style.color]="getCategoryColor(expense)">
+                      {{ getCategoryIcon(expense) }}
+                    </span>
+                  </div>
+                  <div class="expense-info">
+                    <div class="expense-desc">{{ expense.description }}</div>
+                    <div class="expense-meta">
+                      <span class="badge badge-gray">{{ expense.category?.name ?? 'Sem categoria' }}</span>
+                      @if (expense.type === 'parcelado') {
+                        <span class="badge badge-accent">{{ expense.installment_number }}/{{ expense.total_installments }}x</span>
+                      }
+                      @if (expense.type === 'recorrente') {
+                        <span class="badge badge-yellow">Recorrente</span>
+                      }
+                    </div>
+                    <div class="expense-date">{{ expense.date | date:'dd/MM/yyyy':'':'pt-BR' }}</div>
+                  </div>
+                  <div class="expense-amount">{{ expense.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
+                </div>
+              }
+            </div>
+          }
         }
       </main>
 
-      <!-- FAB -->
-      <button class="fab" (click)="openAdd()" aria-label="Adicionar gasto">
-        <span class="material-icons-round">add</span>
-      </button>
+
 
       <!-- Modal -->
       @if (showModal()) {
@@ -112,7 +128,7 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Valor (R$)</label>
-                  <input type="number" class="form-control" [(ngModel)]="form.amount" placeholder="0,00" step="0.01" min="0" />
+                  <input type="text" inputmode="numeric" class="form-control" appCurrencyFormat [(ngModel)]="form.amount" placeholder="0,00" />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Data</label>
@@ -170,8 +186,6 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
           </div>
         </div>
       }
-
-      <app-bottom-nav />
     </div>
   `,
   styles: [`
@@ -179,6 +193,7 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
 
     .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem 1rem 4.5rem;display:flex;align-items:center;justify-content:space-between; }
     .page-title { font-size:1.125rem;font-weight:700; }
+    .btn-icon { background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-secondary);transition:all 150ms; &:hover{color:var(--color-text-primary);} .material-icons-round{font-size:20px;} }
     .month-selector { display:flex;align-items:center;gap:0.25rem;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:12px;padding:0.25rem; }
     .month-btn { background:none;border:none;cursor:pointer;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;border-radius:8px;transition:all 150ms; &:hover:not(:disabled){color:var(--color-text-primary);} &:disabled{opacity:0.3;} .material-icons-round{font-size:18px;} }
     .month-label { font-size:0.8125rem;font-weight:600;padding:0 0.25rem;min-width:70px;text-align:center; }
@@ -266,6 +281,13 @@ export class ExpensesComponent implements OnInit {
 
   async ngOnInit() {
     const [, cats] = await Promise.all([this.loadExpenses(), this.categoryService.getAll()]);
+    
+    cats.sort((a, b) => {
+      if (a.name.toLowerCase() === 'outros') return 1;
+      if (b.name.toLowerCase() === 'outros') return -1;
+      return a.name.localeCompare(b.name);
+    });
+
     this.categories.set(cats);
   }
 
@@ -280,7 +302,7 @@ export class ExpensesComponent implements OnInit {
   }
 
   async prevMonth() { const d = new Date(this.currentDate()); d.setMonth(d.getMonth() - 1); this.currentDate.set(d); await this.loadExpenses(); }
-  async nextMonth() { if (this.isCurrentMonth()) return; const d = new Date(this.currentDate()); d.setMonth(d.getMonth() + 1); this.currentDate.set(d); await this.loadExpenses(); }
+  async nextMonth() { const d = new Date(this.currentDate()); d.setMonth(d.getMonth() + 1); this.currentDate.set(d); await this.loadExpenses(); }
 
   openAdd() {
     this.editingExpense.set(null);
@@ -297,8 +319,8 @@ export class ExpensesComponent implements OnInit {
   closeModal() { this.showModal.set(false); }
 
   async saveExpense() {
-    if (!this.form.description || !this.form.amount) {
-      alert('Por favor, preencha a descrição e o valor do gasto.');
+    if (!this.form.description || !this.form.amount || !this.form.category_id) {
+      alert('Por favor, preencha a descrição, o valor e selecione uma categoria.');
       return;
     }
     this.saving.set(true);
@@ -309,12 +331,12 @@ export class ExpensesComponent implements OnInit {
         const startDate = new Date(this.form.date);
         await this.expenseService.createInstallments(
           { description: this.form.description, total_amount: this.form.amount, total_installments: this.form.total_installments, installment_amount: this.form.amount / this.form.total_installments, start_date: this.form.date },
-          startDate, this.form.category_id || null
+          startDate, this.form.category_id
         );
       } else if (this.editingExpense()) {
-        await this.expenseService.update(this.editingExpense()!.id, { ...this.form, category_id: this.form.category_id || null, month, year });
+        await this.expenseService.update(this.editingExpense()!.id, { ...this.form, category_id: this.form.category_id, month, year });
       } else {
-        await this.expenseService.create({ ...this.form, category_id: this.form.category_id || null, month, year });
+        await this.expenseService.create({ ...this.form, category_id: this.form.category_id, month, year });
       }
       this.closeModal();
       await this.loadExpenses();

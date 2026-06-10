@@ -1,8 +1,7 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ExpenseService } from '../../core/services/expense.service';
 import { IncomeService } from '../../core/services/income.service';
-import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
 
 interface MonthHistory {
   month: number;
@@ -16,7 +15,7 @@ interface MonthHistory {
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, BottomNavComponent],
+  imports: [CommonModule],
   template: `
     <div class="app-container">
       <header class="page-header">
@@ -74,7 +73,6 @@ interface MonthHistory {
         }
       </main>
 
-      <app-bottom-nav />
     </div>
   `,
   styles: [`
@@ -101,31 +99,55 @@ interface MonthHistory {
 export class HistoryComponent implements OnInit {
   private expenseService = inject(ExpenseService);
   private incomeService = inject(IncomeService);
+  private ngZone = inject(NgZone);
 
   history = signal<MonthHistory[]>([]);
   loading = signal(true);
 
   async ngOnInit() {
     this.loading.set(true);
-    const months: MonthHistory[] = [];
     const now = new Date();
-    for (let i = 11; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const month = d.getMonth() + 1;
-      const year = d.getFullYear();
-      const [totalExpenses, totalIncome] = await Promise.all([
-        this.expenseService.getTotalByMonth(month, year),
-        this.incomeService.getTotalByMonth(month, year),
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    
+    try {
+      const [allExpenses, allIncomes] = await Promise.all([
+        this.expenseService.getForLast12Months(currentYear, currentMonth),
+        this.incomeService.getForLast12Months(currentYear, currentMonth)
       ]);
-      months.push({
-        month, year,
-        label: d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
-        totalExpenses, totalIncome,
-        balance: totalIncome - totalExpenses,
+
+      const months: MonthHistory[] = [];
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const m = d.getMonth() + 1;
+        const y = d.getFullYear();
+        
+        const monthExpenses = allExpenses.filter(e => e.month === m && e.year === y);
+        const monthIncomes = allIncomes.filter(inc => inc.month === m && inc.year === y);
+        
+        const totalExpenses = monthExpenses.reduce((s, e) => s + e.amount, 0);
+        const totalIncome = monthIncomes.reduce((s, inc) => s + inc.amount, 0);
+        
+        months.push({
+          month: m,
+          year: y,
+          label: d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+          totalExpenses,
+          totalIncome,
+          balance: totalIncome - totalExpenses,
+        });
+      }
+
+      this.ngZone.run(() => {
+        this.history.set(months);
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      this.ngZone.run(() => {
+        this.loading.set(false);
       });
     }
-    this.history.set(months.reverse());
-    this.loading.set(false);
   }
 
   isCurrentMonth = (item: MonthHistory) => {

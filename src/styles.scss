@@ -357,8 +357,6 @@ select.form-control {
 .app-container {
   min-height: 100vh;
   min-height: 100dvh;
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
   position: relative;
   background: var(--color-bg-primary);
@@ -630,4 +628,48 @@ select.form-control {
   .app-container {
     box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
   }
+}
+
+/* --- Sidebar Layout Transitions --- */
+body.sidebar-open {
+  overflow-x: hidden;
+  
+  @media (min-width: 768px) {
+    .app-container {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+    }
+    .page-header {
+      padding-left: 1.5rem !important;
+    }
+  }
+}
+
+body:not(.sidebar-open) {
+  @media (min-width: 768px) {
+    .app-container {
+      margin-left: 0;
+    }
+    .page-header {
+      padding-left: 4.5rem !important;
+    }
+  }
+}
+
+/* Mobile defaults for padding-left when sidebar is not affecting layout */
+@media (max-width: 767px) {
+  .page-header {
+    padding-left: 4.5rem !important;
+  }
+  .app-container {
+    margin-left: 0 !important;
+  }
+}
+
+.app-container {
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-header {
+  transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
