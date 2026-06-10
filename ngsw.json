@@ -1,0 +1,109 @@
+{
+  "configVersion": 1,
+  "timestamp": 1781063335452,
+  "index": "https://hugocotrim-dev.github.io/controle-financeiro/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-36E7MBMH.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-5OSOQAMN.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-E2P6FWIT.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-EJ2DDWHZ.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-F6ZH7RGF.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-G5KYRPL6.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-GS5U6CSC.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-HELP4UFW.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-MNQSI2HL.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-P6DYGPVE.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-SQ4NZ234.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-U6E6NWEU.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-VMTDD6PQ.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-VW7UWUW7.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-VZ5E3OIC.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/chunk-ZR7BXNAZ.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/favicon.ico",
+        "https://hugocotrim-dev.github.io/controle-financeiro/index.html",
+        "https://hugocotrim-dev.github.io/controle-financeiro/main-NS5RIQKF.js",
+        "https://hugocotrim-dev.github.io/controle-financeiro/manifest.webmanifest",
+        "https://hugocotrim-dev.github.io/controle-financeiro/styles-EAOWKTQP.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-128x128.png",
+        "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-144x144.png",
+        "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-152x152.png",
+        "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-192x192.png",
+        "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-384x384.png",
+        "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-512x512.png",
+        "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-72x72.png",
+        "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-96x96.png"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-36E7MBMH.js": "b5d51876f6e7f00d7b37a93b40e339b1aa9bc515",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-5OSOQAMN.js": "49df88d41da03badab8adf57bc8384091270ef45",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-E2P6FWIT.js": "6bf7a36598510a473d2d350f074bbe842e4c8e44",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-EJ2DDWHZ.js": "7ee2eaf4c0da927ed504c78909f077458522c94c",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-F6ZH7RGF.js": "0e887fb9f0595c610eea6752a6ca0ef2e7d3d355",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-G5KYRPL6.js": "b68f0aef9eb159a66b983f7b7cf791f93eee6bef",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-GS5U6CSC.js": "1fcca0b2769af494cb947d4afc3fa957b3e063d9",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-HELP4UFW.js": "7c52bec7246153a62023d2731a49a287e03c84e1",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-MNQSI2HL.js": "d60a154b54e5954317d079c6bd94e7689af5e658",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-P6DYGPVE.js": "d67617f4a1332e29c9e6d0b022c14b465f69643f",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-SQ4NZ234.js": "28c297b4bc740d9f152d7170e2e72dfaf676b64b",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-U6E6NWEU.js": "dc5e98e5528a357938c050ba290e1ae7c4a71c46",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-VMTDD6PQ.js": "0f2e8deefda57e86f04ad68b7293d996d0ad0ea0",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-VW7UWUW7.js": "e259334d786e2b3e9e6551fd475e54374194190e",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-VZ5E3OIC.js": "6305231f92376fba859771ab2374e44a9e114c98",
+    "https://hugocotrim-dev.github.io/controle-financeiro/chunk-ZR7BXNAZ.js": "20ad8e1a75b10a66fd4b6edc8d82563afc481676",
+    "https://hugocotrim-dev.github.io/controle-financeiro/favicon.ico": "9c39f434fe1261f68c5e3eefdf734630d99c5670",
+    "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-128x128.png": "f912963bdc6d5a38d8f1dd0afbaab2ce8d657acb",
+    "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-144x144.png": "b155fd5f2fd5d2ea7760721063003c4cd95fd783",
+    "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-152x152.png": "eae6e0f0c8afb8aaae339e2a569b43e9238e5e6c",
+    "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-192x192.png": "15c4180454633880d98674aa7394656196c91584",
+    "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-384x384.png": "94a915751ef6c9282df9aea405ad679230631814",
+    "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-512x512.png": "1de182f76f7329dfa8f9fcdd1fdcdd695bea6a99",
+    "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-72x72.png": "aa88a6096bd973be7f6d7a5489bfa6bc2463f8c4",
+    "https://hugocotrim-dev.github.io/controle-financeiro/icons/icon-96x96.png": "7fb8f59c30ce2ff12c700321a0b39e14b3dc8f95",
+    "https://hugocotrim-dev.github.io/controle-financeiro/index.html": "1d98367ab55a889d4976824898654b8f8a56d5ad",
+    "https://hugocotrim-dev.github.io/controle-financeiro/main-NS5RIQKF.js": "f9d11304742973dd37421585abd10e5cc53fc512",
+    "https://hugocotrim-dev.github.io/controle-financeiro/manifest.webmanifest": "d917e59c268f622fa8477038ea213a1621e33e4d",
+    "https://hugocotrim-dev.github.io/controle-financeiro/styles-EAOWKTQP.css": "53c4fbb7c1d9d4caad940efcbc167f4f46546a5f"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}
