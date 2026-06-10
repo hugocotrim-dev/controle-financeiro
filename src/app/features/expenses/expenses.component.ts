@@ -346,7 +346,13 @@ export class ExpensesComponent implements OnInit {
 
   async deleteExpense() {
     if (!this.editingExpense()) return;
-    if (!confirm('Excluir este gasto?')) return;
+    
+    const isParcelado = this.editingExpense()?.type === 'parcelado';
+    const confirmMsg = isParcelado 
+      ? 'Atenção: Este é um gasto parcelado. Excluir esta parcela apagará TODAS as outras parcelas relacionadas. Tem certeza que deseja excluir?' 
+      : 'Excluir este gasto?';
+      
+    if (!confirm(confirmMsg)) return;
     this.saving.set(true);
     try {
       await this.expenseService.delete(this.editingExpense()!.id);

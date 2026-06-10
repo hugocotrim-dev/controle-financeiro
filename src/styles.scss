@@ -377,7 +377,7 @@ select.form-control {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--color-border);
-  padding: var(--space-4) var(--space-4) var(--space-4) calc(60px + var(--space-2));
+  padding: var(--space-4);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -630,46 +630,21 @@ select.form-control {
   }
 }
 
-/* --- Sidebar Layout Transitions --- */
-body.sidebar-open {
-  overflow-x: hidden;
-  
-  @media (min-width: 768px) {
-    .app-container {
-      margin-left: 260px;
-      width: calc(100% - 260px);
-    }
-    .page-header {
-      padding-left: 1.5rem !important;
-    }
+/* --- App Container Responsive Margins --- */
+@media (min-width: 768px) {
+  .app-container.has-sidebar {
+    margin-left: 260px;
+    width: calc(100% - 260px);
   }
 }
 
-body:not(.sidebar-open) {
-  @media (min-width: 768px) {
-    .app-container {
-      margin-left: 0;
-    }
-    .page-header {
-      padding-left: 4.5rem !important;
-    }
-  }
-}
-
-/* Mobile defaults for padding-left when sidebar is not affecting layout */
 @media (max-width: 767px) {
-  .page-header {
-    padding-left: 4.5rem !important;
-  }
-  .app-container {
-    margin-left: 0 !important;
+  .app-container.has-sidebar {
+    margin-bottom: calc(var(--bottom-nav-height, 72px) + var(--space-4));
   }
 }
 
 .app-container {
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.page-header {
-  transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}

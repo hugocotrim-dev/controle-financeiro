@@ -96,12 +96,37 @@ export class ExpenseService {
   }
 
   async delete(id: string): Promise<void> {
-    const { error } = await this.supabase.client
+    const { data: expense, error: fetchError } = await this.supabase.client
       .from('expenses')
-      .delete()
+      .select('installment_group_id')
       .eq('id', id)
-      .eq('user_id', this.auth.getCurrentUserId());
-    if (error) throw error;
+      .eq('user_id', this.auth.getCurrentUserId())
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    if (expense?.installment_group_id) {
+      const { error: deleteExpensesError } = await this.supabase.client
+        .from('expenses')
+        .delete()
+        .eq('installment_group_id', expense.installment_group_id)
+        .eq('user_id', this.auth.getCurrentUserId());
+      if (deleteExpensesError) throw deleteExpensesError;
+
+      const { error: deleteGroupError } = await this.supabase.client
+        .from('installment_groups')
+        .delete()
+        .eq('id', expense.installment_group_id)
+        .eq('user_id', this.auth.getCurrentUserId());
+      if (deleteGroupError) throw deleteGroupError;
+    } else {
+      const { error } = await this.supabase.client
+        .from('expenses')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', this.auth.getCurrentUserId());
+      if (error) throw error;
+    }
   }
 
   async getTotalByMonth(month: number, year: number): Promise<number> {

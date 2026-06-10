@@ -19,7 +19,9 @@ import { BottomNavComponent } from './shared/components/bottom-nav/bottom-nav.co
       @if (authService.isLoggedIn()) {
         <app-bottom-nav />
       }
-      <router-outlet />
+      <main class="app-container" [class.has-sidebar]="authService.isLoggedIn()">
+        <router-outlet />
+      </main>
     }
   `,
   styles: [`
