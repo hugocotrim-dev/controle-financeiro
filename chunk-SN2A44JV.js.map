@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/core/models/goal.model.ts"],
+  "sourcesContent": ["export type GoalType = 'mensal' | 'anual';\r\nexport type GoalStatus = 'safe' | 'warning' | 'danger';\r\n\r\nexport interface Goal {\r\n  id: string;\r\n  user_id: string;\r\n  name: string;\r\n  limit_amount: number;\r\n  type: GoalType;\r\n  month?: number;\r\n  year?: number;\r\n  current_amount: number;\r\n  created_at: string;\r\n}\r\n\r\nexport function getGoalStatus(current: number, limit: number): GoalStatus {\r\n  const pct = (current / limit) * 100;\r\n  if (pct >= 100) return 'danger';\r\n  if (pct >= 80) return 'warning';\r\n  return 'safe';\r\n}\r\n"],
+  "mappings": ";AAeM,SAAU,cAAc,SAAiB,OAAa;AAC1D,QAAM,MAAO,UAAU,QAAS;AAChC,MAAI,OAAO;AAAK,WAAO;AACvB,MAAI,OAAO;AAAI,WAAO;AACtB,SAAO;AACT;",
+  "names": []
+}
