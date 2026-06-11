@@ -34,11 +34,8 @@ interface Insight {
     <div class="app-container">
       <!-- Header -->
       <header class="page-header">
-        <div class="header-left">
-          <p class="greeting">{{ greeting() }}</p>
-          <h2 class="user-name">{{ profile()?.username ?? 'Usuário' }} 👋</h2>
-        </div>
-        <div class="header-right">
+        <h1 class="page-title">Olá, {{ greeting() | lowercase }}, {{ profile()?.username ?? 'Usuário' }}!</h1>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
           <div class="month-selector">
             <button class="month-btn" (click)="prevMonth()">
               <span class="material-icons-round">chevron_left</span>
@@ -64,8 +61,10 @@ interface Insight {
           }
           <div class="balance-row">
             <div class="balance-item">
-              <span class="material-icons-round" style="color:var(--color-green);font-size:16px">arrow_upward</span>
-              <span class="balance-item-label">Receitas</span>
+              <div class="balance-item-header">
+                <span class="material-icons-round" style="color:var(--color-green);font-size:16px">arrow_upward</span>
+                <span class="balance-item-label">Receitas</span>
+              </div>
               @if (loading()) {
                 <div class="skeleton" style="height:16px;width:80px;border-radius:4px"></div>
               } @else {
@@ -74,8 +73,10 @@ interface Insight {
             </div>
             <div class="balance-divider"></div>
             <div class="balance-item">
-              <span class="material-icons-round" style="color:var(--color-red);font-size:16px">arrow_downward</span>
-              <span class="balance-item-label">Gastos</span>
+              <div class="balance-item-header">
+                <span class="material-icons-round" style="color:var(--color-red);font-size:16px">arrow_downward</span>
+                <span class="balance-item-label">Gastos</span>
+              </div>
               @if (loading()) {
                 <div class="skeleton" style="height:16px;width:80px;border-radius:4px"></div>
               } @else {
@@ -219,26 +220,12 @@ interface Insight {
     </div>
   `,
   styles: [`
-    .app-container { min-height:100vh;background:var(--color-bg-primary); }
-
-    .page-header {
-      background: rgba(0,0,0,0.9);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--color-border);
-      padding: 1rem 1.25rem 1rem 4.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .greeting { font-size:0.75rem;color:var(--color-text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.05em; }
-    .user-name { font-size:1.125rem;font-weight:700;margin-top:2px; }
-
-    .month-selector { display:flex;align-items:center;gap:0.25rem;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:12px;padding:0.25rem; }
-    .month-btn { background:none;border:none;cursor:pointer;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;border-radius:8px;transition:all 150ms; &:hover:not(:disabled){color:var(--color-text-primary);background:var(--color-bg-card-hover);} &:disabled{opacity:0.3;cursor:not-allowed;} .material-icons-round{font-size:18px;} }
+    .app-container { min-height: 100vh; background: var(--color-bg-primary); padding-bottom: 5rem; }
+    .page-header { background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--color-border); padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .page-title { font-size:1.125rem;font-weight:700; }
+    
+    .month-selector { display: flex; align-items: center; gap: 0.25rem; background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: 12px; padding: 0.25rem; }
+    .month-btn { background: none; border: none; cursor: pointer; color: var(--color-text-secondary); display: flex; align-items: center; padding: 0.25rem; border-radius: 8px; transition: all 150ms; &:hover:not(:disabled){color:var(--color-text-primary);background:var(--color-bg-card-hover);} &:disabled{opacity:0.3;cursor:not-allowed;} .material-icons-round{font-size:18px;} }
     .month-label { font-size:0.8125rem;font-weight:600;color:var(--color-text-primary);padding:0 0.25rem;min-width:70px;text-align:center; }
 
     .balance-card {
@@ -261,13 +248,12 @@ interface Insight {
       }
     }
 
-    .balance-label { font-size:0.75rem;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.06em; }
-    .balance-amount { font-size:2.5rem;font-weight:800;letter-spacing:-0.03em;margin:0.5rem 0;transition:all 300ms; &.positive{color:var(--color-green);} &.negative{color:var(--color-red);} }
-    .balance-row { display:flex;align-items:center;gap:1rem;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06); }
-    .balance-item { display:flex;align-items:center;gap:0.375rem;flex:1; }
-    .balance-item-label { font-size:0.75rem;color:var(--color-text-muted);flex:1; }
-    .balance-item-value { font-size:0.875rem;font-weight:700; &.income{color:var(--color-green);} &.expense{color:var(--color-red);} }
-    .balance-divider { width:1px;height:32px;background:rgba(255,255,255,0.08); }
+    .balance-row { display:flex;justify-content:space-between;gap:0.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06); }
+    .balance-item { display:flex;flex-direction:column;gap:0.25rem;flex:1;min-width:0; }
+    .balance-item-header { display:flex;align-items:center;gap:0.25rem; }
+    .balance-item-label { font-size:0.75rem;color:var(--color-text-muted); }
+    .balance-item-value { font-size:1rem;font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; &.income{color:var(--color-green);} &.expense{color:var(--color-red);} }
+    .balance-divider { width:1px;height:auto;min-height:32px;background:rgba(255,255,255,0.08);margin:0; }
 
     .stats-grid { display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin:0 1rem 1rem; }
     .stat-card { background:var(--gradient-card);border:1px solid var(--color-border);border-radius:16px;padding:1rem; }

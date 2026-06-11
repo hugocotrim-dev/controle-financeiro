@@ -12,16 +12,14 @@ import { CurrencyFormatDirective } from '../../shared/directives/currency-format
   template: `
     <div class="app-container">
       <header class="page-header">
-        <div class="header-left">
-          <h1 class="page-title">Metas Financeiras</h1>
-        </div>
-        <div class="header-right" style="display:flex;gap:1rem;align-items:center;">
-          <div class="month-selector" style="display:flex;align-items:center;gap:0.25rem;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:12px;padding:0.25rem;">
-            <button class="month-btn" (click)="prevMonth()" style="background:none;border:none;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;cursor:pointer;"><span class="material-icons-round">chevron_left</span></button>
-            <span class="month-label" style="font-size:0.8125rem;font-weight:600;min-width:70px;text-align:center;">{{ currentMonthLabel() }}</span>
-            <button class="month-btn" (click)="nextMonth()" style="background:none;border:none;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;cursor:pointer;"><span class="material-icons-round">chevron_right</span></button>
+        <h1 class="page-title">Metas Financeiras</h1>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <div class="month-selector">
+            <button class="month-btn" (click)="prevMonth()"><span class="material-icons-round">chevron_left</span></button>
+            <span class="month-label">{{ currentMonthLabel() }}</span>
+            <button class="month-btn" (click)="nextMonth()"><span class="material-icons-round">chevron_right</span></button>
           </div>
-          <button class="btn-icon" (click)="openAdd()">
+          <button class="btn-icon" (click)="openAdd()" aria-label="Adicionar meta">
             <span class="material-icons-round">add</span>
           </button>
         </div>
@@ -154,10 +152,17 @@ import { CurrencyFormatDirective } from '../../shared/directives/currency-format
   `,
   styles: [`
     .app-container { min-height:100vh;background:var(--color-bg-primary); }
-    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem 1rem 4.5rem;display:flex;align-items:center;justify-content:space-between; }
+    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between; }
     .page-title { font-size:1.125rem;font-weight:700; }
     .btn-icon { background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-secondary);transition:all 150ms; &:hover{color:var(--color-text-primary);} .material-icons-round{font-size:20px;} }
-    .goals-list { display:flex;flex-direction:column;gap:0.75rem; }
+    .month-selector { display:flex;align-items:center;gap:0.25rem;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:12px;padding:0.25rem; }
+    .month-btn { background:none;border:none;cursor:pointer;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;border-radius:8px;transition:all 150ms; &:hover:not(:disabled){color:var(--color-text-primary);} &:disabled{opacity:0.3;} .material-icons-round{font-size:18px;} }
+    .month-label { font-size:0.8125rem;font-weight:600;padding:0 0.25rem;min-width:70px;text-align:center; }
+    .empty-state { text-align:center;padding:3rem 1.25rem;display:flex;flex-direction:column;align-items:center; }
+    .empty-icon { font-size:48px;color:var(--color-text-muted);margin-bottom:1rem;opacity:0.5; }
+    .empty-title { font-size:1.125rem;font-weight:700;color:var(--color-text-primary);margin-bottom:0.5rem; }
+    .empty-desc { font-size:0.875rem;color:var(--color-text-muted);margin-bottom:1.5rem;max-width:250px; }
+    .goals-list { display:flex;flex-direction:column;gap:0.75rem;padding:0 1rem; }
     .goal-card { background:var(--gradient-card);border:1px solid var(--color-border);border-radius:20px;padding:1.25rem;cursor:pointer;transition:all 200ms;
       &:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
       &.status-safe{border-color:rgba(16,185,129,0.2);}

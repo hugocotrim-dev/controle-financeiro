@@ -43,21 +43,23 @@ import { CurrencyFormatDirective } from '../../shared/directives/currency-format
             <span class="material-icons-round empty-icon">receipt_long</span>
             <p class="empty-title">Nenhum gasto encontrado</p>
             <p class="empty-desc">Adicione um gasto para controlar suas finanças</p>
-            <button class="btn btn-primary" (click)="openAdd()" style="margin-top:1rem">
+            <button class="btn btn-danger" (click)="openAdd()" style="margin-top:1rem">
               <span class="material-icons-round">add</span> Novo gasto
             </button>
           </div>
         } @else {
           <!-- Total Card -->
           <div class="total-card animate-fade-in">
-            <span class="material-icons-round total-icon">payments</span>
-            <div style="flex: 1;">
-              <div class="total-label">Total de gastos</div>
-              <div class="total-value">{{ totalExpenses() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
+            <div class="total-card-header">
+              <div class="total-title-group">
+                <span class="material-icons-round total-icon">payments</span>
+                <div class="total-label">Total de gastos</div>
+              </div>
+              <button class="btn btn-danger" (click)="openAdd()">
+                <span class="material-icons-round" style="font-size: 18px;">add</span> Novo gasto
+              </button>
             </div>
-            <button class="btn btn-primary" (click)="openAdd()" style="border-radius: 12px; padding: 0.5rem 1rem; font-size: 0.875rem;">
-              <span class="material-icons-round" style="font-size: 18px;">add</span> Novo gasto
-            </button>
+            <div class="total-value">{{ totalExpenses() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
           </div>
 
           <!-- Category Filter -->
@@ -191,17 +193,19 @@ import { CurrencyFormatDirective } from '../../shared/directives/currency-format
   styles: [`
     .app-container { min-height:100vh;background:var(--color-bg-primary); }
 
-    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem 1rem 4.5rem;display:flex;align-items:center;justify-content:space-between; }
+    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between; }
     .page-title { font-size:1.125rem;font-weight:700; }
     .btn-icon { background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-secondary);transition:all 150ms; &:hover{color:var(--color-text-primary);} .material-icons-round{font-size:20px;} }
     .month-selector { display:flex;align-items:center;gap:0.25rem;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:12px;padding:0.25rem; }
     .month-btn { background:none;border:none;cursor:pointer;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;border-radius:8px;transition:all 150ms; &:hover:not(:disabled){color:var(--color-text-primary);} &:disabled{opacity:0.3;} .material-icons-round{font-size:18px;} }
     .month-label { font-size:0.8125rem;font-weight:600;padding:0 0.25rem;min-width:70px;text-align:center; }
 
-    .total-card { display:flex;align-items:center;gap:0.75rem;margin:1rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:16px;padding:1rem 1.25rem; }
-    .total-icon { font-size:28px;color:var(--color-red); }
-    .total-label { font-size:0.75rem;color:var(--color-text-muted); }
-    .total-value { font-size:1.375rem;font-weight:800;color:var(--color-red); }
+    .total-card { display:flex;flex-direction:column;gap:0.75rem;margin:1rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:16px;padding:1.25rem; }
+    .total-card-header { display:flex;justify-content:space-between;align-items:center; }
+    .total-title-group { display:flex;align-items:center;gap:0.5rem; }
+    .total-icon { font-size:24px;color:var(--color-red); }
+    .total-label { font-size:0.875rem;color:var(--color-text-muted);font-weight:500; }
+    .total-value { font-size:clamp(1.5rem, 6vw, 2.25rem);font-weight:800;color:var(--color-red);white-space:nowrap;letter-spacing:-0.03em; }
 
     .filter-chips { display:flex;gap:0.5rem;overflow-x:auto;padding:0 1rem 0.75rem;scrollbar-width:none; &::-webkit-scrollbar{display:none;} }
 

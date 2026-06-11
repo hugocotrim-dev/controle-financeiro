@@ -43,14 +43,16 @@ import { CurrencyFormatDirective } from '../../shared/directives/currency-format
         } @else {
           <!-- Total Card -->
           <div class="total-card animate-fade-in">
-            <span class="material-icons-round total-icon">trending_up</span>
-            <div style="flex: 1;">
-              <div class="total-label">Total de receitas</div>
-              <div class="total-value">{{ totalIncome() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
+            <div class="total-card-header">
+              <div class="total-title-group">
+                <span class="material-icons-round total-icon">trending_up</span>
+                <div class="total-label">Total de receitas</div>
+              </div>
+              <button class="btn btn-success" (click)="openAdd()">
+                <span class="material-icons-round" style="font-size: 18px;">add</span> Nova receita
+              </button>
             </div>
-            <button class="btn btn-success" (click)="openAdd()" style="border-radius: 12px; padding: 0.5rem 1rem; font-size: 0.875rem;">
-              <span class="material-icons-round" style="font-size: 18px;">add</span> Nova receita
-            </button>
+            <div class="total-value">{{ totalIncome() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
           </div>
 
           <div class="income-list stagger-children">
@@ -123,16 +125,18 @@ import { CurrencyFormatDirective } from '../../shared/directives/currency-format
   `,
   styles: [`
     .app-container { min-height:100vh;background:var(--color-bg-primary); }
-    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem 1rem 4.5rem;display:flex;align-items:center;justify-content:space-between; }
+    .page-header { position:sticky;top:0;z-index:10;background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--color-border);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between; }
     .page-title { font-size:1.125rem;font-weight:700; }
     .btn-icon { background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-secondary);transition:all 150ms; &:hover{color:var(--color-text-primary);} .material-icons-round{font-size:20px;} }
     .month-selector { display:flex;align-items:center;gap:0.25rem;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:12px;padding:0.25rem; }
     .month-btn { background:none;border:none;cursor:pointer;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;border-radius:8px;transition:all 150ms; &:hover:not(:disabled){color:var(--color-text-primary);} &:disabled{opacity:0.3;} .material-icons-round{font-size:18px;} }
     .month-label { font-size:0.8125rem;font-weight:600;padding:0 0.25rem;min-width:70px;text-align:center; }
-    .total-card { display:flex;align-items:center;gap:0.75rem;margin:1rem;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:16px;padding:1rem 1.25rem; }
-    .total-icon { font-size:28px;color:var(--color-green); }
-    .total-label { font-size:0.75rem;color:var(--color-text-muted); }
-    .total-value { font-size:1.375rem;font-weight:800;color:var(--color-green); }
+    .total-card { display:flex;flex-direction:column;gap:0.75rem;margin:1rem;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:16px;padding:1.25rem; }
+    .total-card-header { display:flex;justify-content:space-between;align-items:center; }
+    .total-title-group { display:flex;align-items:center;gap:0.5rem; }
+    .total-icon { font-size:24px;color:var(--color-green); }
+    .total-label { font-size:0.875rem;color:var(--color-text-muted);font-weight:500; }
+    .total-value { font-size:clamp(1.5rem, 6vw, 2.25rem);font-weight:800;color:var(--color-green);white-space:nowrap;letter-spacing:-0.03em; }
     .income-list { padding:0 1rem; }
     .income-item { display:flex;align-items:center;gap:0.75rem;padding:0.875rem;background:var(--gradient-card);border:1px solid var(--color-border);border-radius:16px;margin-bottom:0.5rem;cursor:pointer;transition:all 200ms; &:hover{border-color:var(--color-border-light);transform:translateY(-1px);} }
     .income-icon { width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(16,185,129,0.15); .material-icons-round{font-size:22px;color:var(--color-green);} }

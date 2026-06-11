@@ -30,19 +30,20 @@ type Periodo = 'diario' | 'mensal' | 'anual';
   template: `
     <div class="app-container">
       <header class="page-header">
-        <h1 class="page-title">Saldo e extrato</h1>
+        <h1 class="page-title">Extrato</h1>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <div class="month-selector">
+            <button class="month-btn" (click)="prev()"><span class="material-icons-round">chevron_left</span></button>
+            <span class="month-label">{{ currentDateLabel() }}</span>
+            <button class="month-btn" (click)="next()"><span class="material-icons-round">chevron_right</span></button>
+          </div>
+        </div>
       </header>
 
       <div class="period-tabs">
         <button [class.active]="periodo() === 'diario'" (click)="setPeriodo('diario')">Diário</button>
         <button [class.active]="periodo() === 'mensal'" (click)="setPeriodo('mensal')">Mensal</button>
         <button [class.active]="periodo() === 'anual'" (click)="setPeriodo('anual')">Anual</button>
-      </div>
-
-      <div class="date-navigator">
-        <button class="nav-btn" (click)="prev()"><span class="material-icons-round">chevron_left</span></button>
-        <div class="current-date">{{ currentDateLabel() }}</div>
-        <button class="nav-btn" (click)="next()"><span class="material-icons-round">chevron_right</span></button>
       </div>
 
       @if (!loading() && extratoGroups().length > 0) {
@@ -72,7 +73,11 @@ type Periodo = 'diario' | 'mensal' | 'anual';
             }
           </div>
         } @else if (extratoGroups().length === 0) {
-          <div class="empty-state">Nenhuma movimentação neste período.</div>
+          <div class="empty-state animate-fade-in">
+            <span class="material-icons-round empty-icon">receipt_long</span>
+            <p class="empty-title">Nenhum extrato</p>
+            <p class="empty-desc">Nenhuma movimentação foi encontrada neste período.</p>
+          </div>
         } @else {
           <div class="timeline">
             @for (group of extratoGroups(); track group.dateLabel) {
@@ -108,18 +113,21 @@ type Periodo = 'diario' | 'mensal' | 'anual';
   `,
   styles: [`
     .app-container { min-height: 100vh; background: var(--color-bg-primary); padding-bottom: 5rem; }
-    .page-header { position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--color-border); padding: 1rem 1.25rem 1rem 4.5rem; }
+    .page-header { position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--color-border); padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; }
     .page-title { font-size: 1.125rem; font-weight: 700; }
     
-    .period-tabs { display: flex; padding: 1rem 1.25rem 0.5rem; gap: 0.5rem; }
+    .month-selector { display:flex;align-items:center;gap:0.25rem;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:12px;padding:0.25rem; }
+    .month-btn { background:none;border:none;cursor:pointer;color:var(--color-text-secondary);display:flex;align-items:center;padding:0.25rem;border-radius:8px;transition:all 150ms; &:hover:not(:disabled){color:var(--color-text-primary);} &:disabled{opacity:0.3;} .material-icons-round{font-size:18px;} }
+    .month-label { font-size:0.8125rem;font-weight:600;padding:0 0.25rem;min-width:70px;text-align:center;text-transform:capitalize; }
+
+    .period-tabs { display: flex; padding: 1rem 1.25rem 1.5rem; gap: 0.5rem; }
     .period-tabs button { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--color-text-muted); border-radius: 8px; padding: 0.5rem; font-size: 0.8125rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .period-tabs button.active { background: rgba(168, 85, 247, 0.15); color: var(--color-accent-light); border-color: rgba(168, 85, 247, 0.3); }
 
-    .date-navigator { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1.25rem 1.5rem; }
-    .nav-btn { background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; }
-    .current-date { font-size: 1rem; font-weight: 600; text-transform: capitalize; }
-
-    .empty-state { text-align: center; padding: 3rem 1.25rem; color: var(--color-text-muted); font-size: 0.875rem; }
+    .empty-state { text-align:center;padding:3rem 1.25rem;display:flex;flex-direction:column;align-items:center; }
+    .empty-icon { font-size:48px;color:var(--color-text-muted);margin-bottom:1rem;opacity:0.5; }
+    .empty-title { font-size:1.125rem;font-weight:700;color:var(--color-text-primary);margin-bottom:0.5rem; }
+    .empty-desc { font-size:0.875rem;color:var(--color-text-muted);margin-bottom:1.5rem;max-width:250px; }
 
     .period-summary { display: flex; justify-content: space-between; padding: 1rem 1.25rem; margin: 0 1.25rem 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; }
     .summary-item { display: flex; flex-direction: column; gap: 4px; }

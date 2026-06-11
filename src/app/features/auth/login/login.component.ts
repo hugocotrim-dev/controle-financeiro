@@ -3,21 +3,25 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { LogoAnimationComponent } from '../../../shared/components/logo-animation/logo-animation.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, LogoAnimationComponent],
   template: `
     <div class="auth-page">
-      <div class="auth-bg">
-        <div class="auth-glow"></div>
-      </div>
+      @if (showSplashAnimation()) {
+        <app-logo-animation (animationComplete)="onAnimationComplete()"></app-logo-animation>
+      } @else {
+        <div class="auth-bg">
+          <div class="auth-glow"></div>
+        </div>
 
-      <div class="auth-content">
-        <!-- Logo -->
-        <div class="auth-logo animate-fade-in">
-          <div class="logo-icon">
+        <div class="auth-content">
+          <!-- Logo -->
+          <div class="auth-logo animate-fade-in">
+            <div class="logo-icon">
             <span class="material-icons-round">account_balance_wallet</span>
           </div>
           <h1 class="logo-name">FinanceFlow</h1>
@@ -103,6 +107,7 @@ import { AuthService } from '../../../core/services/auth.service';
           </p>
         </div>
       </div>
+      }
     </div>
   `,
   styles: [`
@@ -286,6 +291,7 @@ export class LoginComponent {
   loading = signal(false);
   error = signal('');
   showPassword = signal(false);
+  showSplashAnimation = signal(false);
 
   constructor(private authService: AuthService, private router: Router) {}
 
@@ -298,11 +304,17 @@ export class LoginComponent {
     this.error.set('');
     try {
       await this.authService.signIn(this.emailOrUsername, this.password);
-      this.router.navigate(['/dashboard']);
+      // Ao invés de navegar, iniciamos a animação Splash
+      this.showSplashAnimation.set(true);
     } catch (err: any) {
       this.error.set(err.message ?? 'Erro ao entrar. Verifique suas credenciais.');
     } finally {
       this.loading.set(false);
     }
+  }
+
+  onAnimationComplete() {
+    // Agora sim, após a animação finalizar, navegamos para o dashboard
+    this.router.navigate(['/dashboard']);
   }
 }
